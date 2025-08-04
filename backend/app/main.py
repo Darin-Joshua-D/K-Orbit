@@ -58,11 +58,22 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     
     # Initialize services
     try:
-        # Add any startup logic here (DB connections, cache warming, etc.)
+        # Initialize database optimization system
+        from app.database import init_database, init_cache, init_monitoring
+        await init_database()
+        await init_cache()
+        await init_monitoring()
+        
+        logger.info("Database optimization system initialized")
         logger.info("Application startup complete")
         yield
     finally:
-        # Cleanup logic
+        # Cleanup database optimization resources
+        from app.database import cleanup_database, cleanup_cache, cleanup_monitoring
+        await cleanup_database()
+        await cleanup_cache()
+        await cleanup_monitoring()
+        
         logger.info("K-Orbit API shutting down...")
 
 
@@ -145,6 +156,14 @@ app.include_router(ai_agent_router, prefix="/api/ai", tags=["AI Agent"])
 app.include_router(resources_router, prefix="/api/resources", tags=["Resources"])
 app.include_router(forum_router, prefix="/api/forum", tags=["Forum"])
 app.include_router(analytics_router, prefix="/api/analytics", tags=["Analytics"])
+
+# Database optimization endpoints
+from app.database.health import router as db_health_router
+app.include_router(db_health_router, prefix="/api/db", tags=["Database"])
+
+# Real-time features endpoints
+from app.realtime.routes import router as realtime_router
+app.include_router(realtime_router, prefix="/api/realtime", tags=["Real-time Features"])
 
 # WebSocket routes
 app.include_router(websocket_router, prefix="/ws")

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Loader2, Sparkles, FileText, Brain } from 'lucide-react';
+import { Send, Bot, User, Loader2, Sparkles, FileText, Brain, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-provider';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
@@ -35,11 +35,12 @@ export function AIChat({ className, isMinimized = false, onToggleMinimize }: AIC
   const { user } = useAuth();
   const [message, setMessage] = useState('');
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
   // Fetch conversation messages
-  const { data: messages = [], isLoading: isLoadingMessages } = useQuery({
+  const { data: messages = [], isLoading: isLoadingMessages, error: messagesError } = useQuery({
     queryKey: ['chat-messages', currentConversationId],
     queryFn: async () => {
       if (!currentConversationId) return [];
@@ -50,10 +51,14 @@ export function AIChat({ className, isMinimized = false, onToggleMinimize }: AIC
         },
       });
       
-      if (!response.ok) throw new Error('Failed to fetch messages');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch messages: ${response.status}`);
+      }
       return response.json();
     },
     enabled: !!currentConversationId && !!user,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
   // Send message mutation
@@ -71,10 +76,16 @@ export function AIChat({ className, isMinimized = false, onToggleMinimize }: AIC
         }),
       });
       
-      if (!response.ok) throw new Error('Failed to send message');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to send message`);
+      }
       return response.json();
     },
     onSuccess: (data) => {
+      // Clear any previous errors
+      setError(null);
+      
       // Update conversation ID if it's a new conversation
       if (!currentConversationId) {
         setCurrentConversationId(data.conversation_id);
@@ -84,6 +95,10 @@ export function AIChat({ className, isMinimized = false, onToggleMinimize }: AIC
       queryClient.invalidateQueries({ queryKey: ['chat-messages', data.conversation_id] });
       setMessage('');
     },
+    onError: (error: Error) => {
+      console.error('Failed to send message:', error);
+      setError(error.message);
+    },
   });
 
   const handleSendMessage = async () => {
@@ -91,6 +106,7 @@ export function AIChat({ className, isMinimized = false, onToggleMinimize }: AIC
     
     const messageContent = message.trim();
     setMessage('');
+    setError(null);
     
     try {
       await sendMessageMutation.mutateAsync(messageContent);
@@ -136,10 +152,13 @@ export function AIChat({ className, isMinimized = false, onToggleMinimize }: AIC
       <div className={cn("fixed bottom-4 right-4 z-50", className)}>
         <button
           onClick={onToggleMinimize}
-          className="bg-primary text-white p-4 rounded-full shadow-lg hover:bg-primary/90 transition-all duration-200 hover:scale-105"
+          className="bg-primary text-white p-4 rounded-full shadow-lg hover:bg-primary/90 transition-all duration-200 hover:scale-105 relative"
         >
           <Bot className="h-6 w-6" />
           <span className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full animate-pulse" />
+          {error && (
+            <span className="absolute -top-1 -left-1 h-3 w-3 bg-red-500 rounded-full" />
+          )}
         </button>
       </div>
     );
@@ -180,6 +199,18 @@ export function AIChat({ className, isMinimized = false, onToggleMinimize }: AIC
 
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Error Display */}
+        {(error || messagesError) && (
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 mb-4">
+            <div className="flex items-center space-x-2">
+              <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+              <span className="text-sm text-red-700 dark:text-red-300">
+                {error || messagesError?.message || 'Something went wrong'}
+              </span>
+            </div>
+          </div>
+        )}
+
         {messages.length === 0 && !isLoadingMessages && (
           <div className="text-center py-8">
             <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -213,6 +244,13 @@ export function AIChat({ className, isMinimized = false, onToggleMinimize }: AIC
                 );
               })}
             </div>
+          </div>
+        )}
+
+        {/* Loading State */}
+        {isLoadingMessages && (
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
         )}
 
