@@ -11,9 +11,9 @@ import structlog
 from fastapi import APIRouter, HTTPException, Request, Depends, BackgroundTasks
 from fastapi.responses import StreamingResponse
 import google.generativeai as genai
-from supabase import create_client, Client
 
 from app.auth.middleware import get_current_user
+from app.database import get_db_manager, get_query_cache, get_db_metrics
 from app.ai_agent.models import (
     ChatMessageRequest,
     ChatMessageResponse,
@@ -37,11 +37,6 @@ from app.ai_agent.models import (
 
 logger = structlog.get_logger()
 
-# Initialize clients
-supabase_url = os.getenv("SUPABASE_URL")
-supabase_key = os.getenv("SUPABASE_ANON_KEY")
-supabase: Client = create_client(supabase_url, supabase_key)
-
 # Google Gemini API configuration
 genai.configure(api_key=os.getenv("GOOGLE_GEMINI_API_KEY"))
 
@@ -59,11 +54,16 @@ async def send_chat_message(
     try:
         start_time = time.time()
         
+        # Get optimized database manager
+        db_manager = await get_db_manager()
+        cache = await get_query_cache()
+        metrics = await get_db_metrics()
+        
         # Create or get conversation
         if request.conversation_id:
             conversation_id = request.conversation_id
         else:
-            # Create new conversation
+            # Create new conversation using optimized database
             conversation_data = {
                 "user_id": user["sub"],
                 "title": request.message[:50] + "..." if len(request.message) > 50 else request.message,
@@ -71,35 +71,64 @@ async def send_chat_message(
                 "last_message_at": datetime.utcnow().isoformat()
             }
             
-            conversation_response = supabase.table("ai_conversations").insert(conversation_data).execute()
-            conversation_id = conversation_response.data[0]["id"]
+            # Use optimized database insert
+            insert_query = """
+            INSERT INTO ai_conversations (user_id, title, message_count, last_message_at)
+            VALUES (%s, %s, %s, %s) RETURNING id
+            """
+            result = await db_manager.execute_query(
+                insert_query,
+                conversation_data["user_id"],
+                conversation_data["title"],
+                conversation_data["message_count"],
+                conversation_data["last_message_at"]
+            )
+            conversation_id = result[0]["id"]
         
-        # Save user message
-        user_message_data = {
-            "conversation_id": conversation_id,
-            "role": "user",
-            "content": request.message,
-            "created_at": datetime.utcnow().isoformat()
-        }
+        # Save user message with performance tracking
+        user_message_query = """
+        INSERT INTO ai_messages (conversation_id, role, content, created_at)
+        VALUES (%s, %s, %s, %s) RETURNING id
+        """
+        user_message_result = await db_manager.execute_query(
+            user_message_query,
+            conversation_id,
+            "user",
+            request.message,
+            datetime.utcnow().isoformat()
+        )
+        user_message_id = user_message_result[0]["id"]
         
-        user_message_response = supabase.table("ai_messages").insert(user_message_data).execute()
-        user_message = user_message_response.data[0]
+        # Record query performance
+        query_time = time.time() - start_time
+        await metrics.record_query(
+            user_message_query,
+            query_time,
+            True,
+            affected_rows=1
+        )
         
-        # Get relevant knowledge context
-        knowledge_context = await _get_knowledge_context(request.message, user["org_id"])
+        # Get relevant knowledge context with caching
+        knowledge_context = await _get_knowledge_context_cached(
+            request.message, user["org_id"], cache
+        )
         
         # Prepare system prompt
         system_prompt = _build_system_prompt(user, knowledge_context)
         
-        # Get conversation history
-        history_response = supabase.table("ai_messages").select("*").eq(
-            "conversation_id", conversation_id
-        ).order("created_at").limit(10).execute()
+        # Get conversation history with optimized query
+        history_query = """
+        SELECT role, content FROM ai_messages 
+        WHERE conversation_id = %s 
+        ORDER BY created_at 
+        LIMIT 10
+        """
+        history_result = await db_manager.execute_query(history_query, conversation_id)
         
         messages = [{"role": "system", "content": system_prompt}]
         
         # Add conversation history
-        for msg in history_response.data[:-1]:  # Exclude the just-added user message
+        for msg in history_result[:-1]:  # Exclude the just-added user message
             messages.append({
                 "role": msg["role"],
                 "content": msg["content"]
@@ -132,46 +161,68 @@ async def send_chat_message(
         
         ai_content = response.text
         
-        # Save AI response
-        ai_message_data = {
-            "conversation_id": conversation_id,
-            "role": "assistant",
-            "content": ai_content,
-            "metadata": {
-                "model": "gemini-pro",
-                "sources": [ctx["title"] for ctx in knowledge_context[:3]],
-                "processing_time_ms": int((time.time() - start_time) * 1000),
-                "tokens_used": len(ai_content.split()) if ai_content else 0  # Approximate token count
-            },
-            "created_at": datetime.utcnow().isoformat()
+        # Save AI response with optimized batch operation
+        ai_message_query = """
+        INSERT INTO ai_messages (conversation_id, role, content, metadata, created_at)
+        VALUES (%s, %s, %s, %s, %s) RETURNING id
+        """
+        
+        metadata = {
+            "model": "gemini-pro",
+            "sources": [ctx["title"] for ctx in knowledge_context[:3]],
+            "processing_time_ms": int((time.time() - start_time) * 1000),
+            "tokens_used": len(ai_content.split()) if ai_content else 0
         }
         
-        ai_message_response = supabase.table("ai_messages").insert(ai_message_data).execute()
-        ai_message = ai_message_response.data[0]
+        ai_message_result = await db_manager.execute_query(
+            ai_message_query,
+            conversation_id,
+            "assistant",
+            ai_content,
+            metadata,
+            datetime.utcnow().isoformat()
+        )
+        ai_message_id = ai_message_result[0]["id"]
         
-        # Update conversation
-        supabase.table("ai_conversations").update({
-            "message_count": len(history_response.data) + 1,
-            "last_message_at": datetime.utcnow().isoformat()
-        }).eq("id", conversation_id).execute()
+        # Update conversation with batch operation
+        update_query = """
+        UPDATE ai_conversations 
+        SET message_count = message_count + 2, last_message_at = %s 
+        WHERE id = %s
+        """
+        await db_manager.execute_query(
+            update_query,
+            datetime.utcnow().isoformat(),
+            conversation_id
+        )
+        
+        # Record performance metrics
+        total_time = time.time() - start_time
+        await metrics.record_query(
+            "ai_chat_complete",
+            total_time,
+            True,
+            affected_rows=3
+        )
         
         logger.info(
             "AI chat message processed",
             user_id=user["sub"],
             conversation_id=conversation_id,
-            processing_time_ms=int((time.time() - start_time) * 1000)
+            processing_time_ms=int(total_time * 1000)
         )
         
         return ChatMessageResponse(
-            id=ai_message["id"],
+            id=ai_message_id,
             conversation_id=conversation_id,
-            role=ai_message["role"],
-            content=ai_message["content"],
-            metadata=ai_message["metadata"],
-            created_at=datetime.fromisoformat(ai_message["created_at"])
+            role="assistant",
+            content=ai_content,
+            metadata=metadata,
+            created_at=datetime.utcnow()
         )
         
     except Exception as e:
+        await metrics.record_query("ai_chat_error", time.time() - start_time, False, str(e))
         logger.error("AI chat failed", error=str(e), user_id=user["sub"])
         raise HTTPException(
             status_code=500,
@@ -188,12 +239,18 @@ async def get_conversations(
     Get user's chat conversations.
     """
     try:
-        response = supabase.table("ai_conversations").select("*").eq(
-            "user_id", user["sub"]
-        ).order("last_message_at", desc=True).limit(limit).execute()
+        db_manager = await get_db_manager()
+        conversations_query = """
+        SELECT id, title, message_count, last_message_at, created_at
+        FROM ai_conversations
+        WHERE user_id = %s
+        ORDER BY last_message_at DESC
+        LIMIT %s
+        """
+        result = await db_manager.execute_query(conversations_query, user["sub"], limit)
         
         conversations = []
-        for conv in response.data:
+        for conv in result:
             conversations.append(ConversationResponse(
                 id=conv["id"],
                 title=conv["title"],
@@ -222,21 +279,26 @@ async def get_conversation_messages(
     Get messages from a specific conversation.
     """
     try:
+        db_manager = await get_db_manager()
         # Verify conversation ownership
-        conv_response = supabase.table("ai_conversations").select("*").eq(
-            "id", conversation_id
-        ).eq("user_id", user["sub"]).single().execute()
+        conv_response = await db_manager.execute_query("""
+        SELECT id, user_id FROM ai_conversations WHERE id = %s AND user_id = %s
+        """, conversation_id, user["sub"])
         
-        if not conv_response.data:
+        if not conv_response:
             raise HTTPException(status_code=404, detail="Conversation not found")
         
         # Get messages
-        messages_response = supabase.table("ai_messages").select("*").eq(
-            "conversation_id", conversation_id
-        ).order("created_at").execute()
+        messages_query = """
+        SELECT id, conversation_id, role, content, metadata, created_at
+        FROM ai_messages
+        WHERE conversation_id = %s
+        ORDER BY created_at
+        """
+        result = await db_manager.execute_query(messages_query, conversation_id)
         
         messages = []
-        for msg in messages_response.data:
+        for msg in result:
             messages.append(ChatMessageResponse(
                 id=msg["id"],
                 conversation_id=msg["conversation_id"],
@@ -288,12 +350,16 @@ async def search_knowledge(
         
         # Perform vector similarity search
         # Note: This is a simplified version. In production, you'd use pgvector properly
-        search_response = supabase.table("knowledge_documents").select(
-            "id, title, content, source_type, source_id, metadata"
-        ).eq("org_id", user["org_id"]).limit(request.limit).execute()
+        search_response = await db_manager.execute_query("""
+        SELECT id, title, content, source_type, source_id, metadata
+        FROM knowledge_documents 
+        WHERE org_id = %s AND embedding IS NOT NULL
+        ORDER BY embedding <=> %s::vector
+        LIMIT %s
+        """, user["org_id"], f"[{','.join(map(str, query_embedding))}]", request.limit)
         
         results = []
-        for doc in search_response.data:
+        for doc in search_response:
             # In a real implementation, you'd calculate actual similarity scores
             results.append(KnowledgeResult(
                 id=doc["id"],
@@ -416,15 +482,21 @@ async def generate_learning_path(
     Generate a personalized learning path using AI.
     """
     try:
+        db_manager = await get_db_manager()
         # Get available courses
-        courses_response = supabase.table("courses").select(
-            "id, title, description, category, difficulty_level, estimated_duration"
-        ).eq("org_id", user["org_id"]).eq("status", "published").execute()
+        courses_query = """
+        SELECT id, title, description, category, difficulty_level, estimated_duration
+        FROM courses
+        WHERE org_id = %s AND status = 'published'
+        ORDER BY estimated_duration
+        LIMIT 5
+        """
+        courses_result = await db_manager.execute_query(courses_query, user["org_id"])
         
         # In a real implementation, you'd use AI to analyze and recommend
         # Here's a simplified version
         steps = []
-        for i, course in enumerate(courses_response.data[:5]):
+        for i, course in enumerate(courses_result):
             steps.append({
                 "order": i + 1,
                 "course_id": course["id"],
@@ -463,11 +535,20 @@ async def generate_learning_path(
         )
 
 
-async def _get_knowledge_context(query: str, org_id: str, limit: int = 3) -> List[Dict[str, Any]]:
+async def _get_knowledge_context_cached(query: str, org_id: str, cache, limit: int = 3) -> List[Dict[str, Any]]:
     """
-    Get relevant knowledge context for the AI chat using semantic search.
+    Get relevant knowledge context with caching support.
     """
     try:
+        # Try to get from cache first
+        cache_key = f"knowledge_context:{org_id}:{query}"
+        cached_result = await cache.get(cache_key)
+        if cached_result is not None:
+            return cached_result
+        
+        # Get from database if not cached
+        db_manager = await get_db_manager()
+        
         # Generate embedding for semantic search
         try:
             import google.generativeai as genai_embed
@@ -480,66 +561,72 @@ async def _get_knowledge_context(query: str, org_id: str, limit: int = 3) -> Lis
             )
             query_embedding = embedding_result["embedding"]["values"]
             
-            # Try vector similarity search first (if embeddings exist)
-            try:
-                # Use pgvector for similarity search
-                # This query finds documents with embeddings and calculates cosine similarity
-                vector_query = f"""
-                SELECT title, content, source_type, metadata,
-                       1 - (embedding <=> '[{','.join(map(str, query_embedding))}]'::vector) AS similarity
-                FROM knowledge_documents 
-                WHERE org_id = '{org_id}' AND embedding IS NOT NULL
-                ORDER BY similarity DESC
-                LIMIT {limit}
-                """
+            # Use optimized vector search
+            vector_search_query = """
+            SELECT title, content, source_type, metadata,
+                   1 - (embedding <=> %s::vector) AS similarity
+            FROM knowledge_documents 
+            WHERE org_id = %s AND embedding IS NOT NULL
+            ORDER BY similarity DESC
+            LIMIT %s
+            """
+            
+            result = await db_manager.execute_query(
+                vector_search_query,
+                f"[{','.join(map(str, query_embedding))}]",
+                org_id,
+                limit
+            )
+            
+            if result:
+                # Cache the result for 5 minutes
+                await cache.set(
+                    cache_key, 
+                    result, 
+                    ttl=300,
+                    tags={"knowledge_search", f"org:{org_id}"}
+                )
+                return result
                 
-                # Execute raw SQL for vector search
-                response = supabase.rpc('vector_search', {
-                    'org_id': org_id,
-                    'query_embedding': query_embedding,
-                    'match_threshold': 0.5,
-                    'match_count': limit
-                }).execute()
-                
-                if response.data:
-                    logger.info("Vector search successful", results=len(response.data))
-                    return response.data
-                
-            except Exception as vector_error:
-                logger.warning("Vector search failed, falling back to text search", error=str(vector_error))
-            
-            # Fallback to text search with keyword matching
-            response = supabase.table("knowledge_documents").select(
-                "title, content, source_type, metadata"
-            ).eq("org_id", org_id).ilike("content", f"%{query}%").limit(limit).execute()
-            
-            if response.data:
-                logger.info("Text search successful", results=len(response.data))
-                return response.data
-            
-            # If no keyword matches, get recent documents
-            response = supabase.table("knowledge_documents").select(
-                "title, content, source_type, metadata"
-            ).eq("org_id", org_id).order("created_at", desc=True).limit(limit).execute()
-            
-            logger.info("Returning recent documents", results=len(response.data) if response.data else 0)
-            return response.data or []
-            
-        except Exception as embed_error:
-            logger.warning("Embedding generation failed, using text search only", error=str(embed_error))
-            
-            # Fallback to text search only
-            response = supabase.table("knowledge_documents").select(
-                "title, content, source_type, metadata"
-            ).eq("org_id", org_id).ilike("content", f"%{query}%").limit(limit).execute()
-            
-            if not response.data:
-                # Get recent documents if no matches
-                response = supabase.table("knowledge_documents").select(
-                    "title, content, source_type, metadata"
-                ).eq("org_id", org_id).order("created_at", desc=True).limit(limit).execute()
-            
-            return response.data or []
+        except Exception as vector_error:
+            logger.warning("Vector search failed, falling back to text search", error=str(vector_error))
+        
+        # Fallback to text search with caching
+        text_search_query = """
+        SELECT title, content, source_type, metadata
+        FROM knowledge_documents 
+        WHERE org_id = %s AND content ILIKE %s
+        LIMIT %s
+        """
+        
+        result = await db_manager.execute_query(
+            text_search_query,
+            org_id,
+            f"%{query}%",
+            limit
+        )
+        
+        if result:
+            # Cache for shorter time (2 minutes) since it's less accurate
+            await cache.set(
+                cache_key,
+                result,
+                ttl=120,
+                tags={"knowledge_search", f"org:{org_id}"}
+            )
+            return result
+        
+        # Return recent documents if no matches
+        recent_docs_query = """
+        SELECT title, content, source_type, metadata
+        FROM knowledge_documents 
+        WHERE org_id = %s 
+        ORDER BY created_at DESC 
+        LIMIT %s
+        """
+        
+        result = await db_manager.execute_query(recent_docs_query, org_id, limit)
+        return result or []
         
     except Exception as e:
         logger.error("Failed to get knowledge context", error=str(e))
@@ -581,4 +668,7 @@ def _build_system_prompt(user: dict, knowledge_context: List[Dict[str, Any]]) ->
     {context_text}
     
     Always aim to be educational and supportive in your responses.
-    """ 
+    """
+
+
+# Additional optimized endpoints can be added here following the same pattern 
