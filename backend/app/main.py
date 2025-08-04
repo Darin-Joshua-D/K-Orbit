@@ -25,6 +25,7 @@ from app.resources.routes import router as resources_router
 from app.forum.routes import router as forum_router
 from app.analytics.routes import router as analytics_router
 from app.realtime.websocket import websocket_router
+from app.database.supabase_client import supabase
 
 # Load environment variables
 load_dotenv()
@@ -110,41 +111,25 @@ app.add_middleware(AuthMiddleware)
 # Global exception handlers
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
-    """Handle HTTP exceptions with structured logging."""
-    logger.error(
-        "HTTP exception occurred",
-        status_code=exc.status_code,
-        detail=exc.detail,
-        path=request.url.path,
-        method=request.method
-    )
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"detail": exc.detail, "type": "http_error"}
-    )
-
+    logger.error("HTTP exception occurred", status_code=exc.status_code, detail=exc.detail, path=request.url.path, method=request.method)
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail, "type": "http_error"})
 
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
-    """Handle general exceptions with structured logging."""
-    logger.error(
-        "Unexpected error occurred",
-        error=str(exc),
-        path=request.url.path,
-        method=request.method,
-        exc_info=True
-    )
-    return JSONResponse(
-        status_code=500,
-        content={"detail": "Internal server error", "type": "server_error"}
-    )
+    logger.error("Unexpected error occurred", error=str(exc), path=request.url.path, method=request.method, exc_info=True)
+    return JSONResponse(status_code=500, content={"detail": "Internal server error", "type": "server_error"})
 
 
 # Health check endpoint
 @app.get("/health")
 async def health_check():
-    """Health check endpoint for monitoring."""
-    return {"status": "healthy", "version": "1.0.0"}
+    try:
+        response = supabase.table("users").select("id").limit(1).execute()
+        if response.error:
+            raise Exception("Database connection failed")
+        return {"status": "healthy", "version": "1.0.0"}
+    except Exception as e:
+        return {"status": "unhealthy", "error": str(e)}
 
 
 # Include routers
@@ -169,6 +154,13 @@ app.include_router(realtime_router, prefix="/api/realtime", tags=["Real-time Fea
 app.include_router(websocket_router, prefix="/ws")
 
 
+def fetch_user_by_email(email: str):
+    response = supabase.table("users").select("*").eq("email", email).execute()
+    if response.error:
+        raise Exception(f"Error fetching user: {response.error.message}")
+    return response.data
+
+
 if __name__ == "__main__":
     import uvicorn
     
@@ -178,4 +170,16 @@ if __name__ == "__main__":
         port=int(os.getenv("PORT", "8000")),
         reload=os.getenv("ENVIRONMENT") != "production",
         log_config=None  # Use structlog instead
-    ) 
+    )
+
+from unittest.mock import AsyncMock, patch
+from app.database.supabase_client import supabase
+
+@patch("app.database.supabase_client.supabase")
+async def test_fetch_user_by_email(mock_supabase):
+    mock_supabase.table.return_value.select.return_value.eq.return_value.execute.return_value = {
+        "data": [{"id": "123", "email": "test@example.com"}],
+        "error": None,
+    }
+    result = fetch_user_by_email("test@example.com")
+    assert result[0]["email"] == "test@example.com"
