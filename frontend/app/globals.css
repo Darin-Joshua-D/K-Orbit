@@ -252,12 +252,16 @@
   
   /* Course Card */
   .course-card {
-    @apply group relative overflow-hidden rounded-xl bg-card border transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+    @apply relative overflow-hidden rounded-xl bg-card border transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
   }
   
   .course-card::before {
     content: '';
-    @apply absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100;
+    @apply absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 transition-opacity duration-300;
+  }
+  
+  .course-card:hover::before {
+    @apply opacity-100;
   }
   
   /* Forum Post */
