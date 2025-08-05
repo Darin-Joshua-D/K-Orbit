@@ -20,10 +20,10 @@ tiktoken==0.5.2
 PyPDF2==3.0.1  # PDF text extraction
 python-docx==1.1.0  # Word document processing
 openpyxl==3.1.2  # Excel file processing
-pandas==2.1.4  # Excel/CSV data processing
+pandas==2.2.2  # Excel/CSV data processing
 Pillow==10.1.0  # Image processing
 pytesseract==0.3.10  # OCR for images
-opencv-python==4.8.1.78  # Advanced image/video processing
+opencv-python==4.10.0.84  # Advanced image/video processing
 python-magic==0.4.27  # File type detection
 
 # Utilities
