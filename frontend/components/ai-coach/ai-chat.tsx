@@ -166,11 +166,11 @@ export function AIChat({ className, isMinimized = false, onToggleMinimize }: AIC
 
   return (
     <div className={cn(
-      "fixed bottom-4 right-4 w-96 h-[600px] bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col z-50",
+      "fixed bottom-4 right-4 w-96 h-[600px] glass-card dark:glass-card-dark flex flex-col z-50 overflow-hidden",
       className
     )}>
       {/* Chat Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-primary/10 to-blue-500/10 rounded-t-xl">
+      <div className="flex items-center justify-between p-4 border-b border-white/20 dark:border-white/10 bg-gradient-to-r from-primary/20 to-blue-500/20 backdrop-blur-sm">
         <div className="flex items-center space-x-3">
           <div className="relative">
             <div className="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-full flex items-center justify-center">

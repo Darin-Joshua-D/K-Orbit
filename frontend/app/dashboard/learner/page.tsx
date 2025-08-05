@@ -117,7 +117,7 @@ function LearnerDashboard() {
     <div className="space-y-6">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="glass p-6 rounded-xl">
+        <div className="glass-card p-6 hover:scale-105 transition-transform duration-300">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Total XP</p>
@@ -130,7 +130,7 @@ function LearnerDashboard() {
           </div>
         </div>
 
-        <div className="glass p-6 rounded-xl">
+        <div className="glass-card p-6 hover:scale-105 transition-transform duration-300">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Courses</p>
