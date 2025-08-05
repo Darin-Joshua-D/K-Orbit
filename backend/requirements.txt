@@ -6,15 +6,15 @@ pydantic==2.5.0
 pydantic-settings==2.1.0
 
 # Database & Auth
-supabase==2.3.0
-asyncpg==0.29.0
-sqlalchemy==2.0.23
-alembic==1.13.1
+supabase
+asyncpg
+sqlalchemy
+alembic
 
 # AI & Vector DB
-google-generativeai==0.3.2  # Google Gemini API
-pinecone-client==2.2.4
-tiktoken==0.5.2
+google-generativeai  # Google Gemini API
+pinecone-client
+tiktoken
 
 # Document Processing
 PyPDF2==3.0.1  # PDF text extraction
@@ -27,16 +27,16 @@ opencv-python  # Advanced image/video processing
 python-magic==0.4.27  # File type detection
 
 # Utilities
-httpx==0.25.2
-python-jose[cryptography]==3.3.0
-passlib[bcrypt]==1.7.4
+httpx
+python-jose[cryptography]
+passlib[bcrypt]
 python-dotenv==1.0.0
-structlog==23.2.0
-redis==5.0.1
+structlog
+redis
 
 # WebSocket & Real-time
-websockets==12.0
-python-socketio==5.10.0
+websockets
+python-socketio
 
 # Testing
 pytest==7.4.3
