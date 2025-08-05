@@ -3,11 +3,11 @@
 fastapi==0.70.1  # Legacy stable version
 uvicorn==0.15.0  # Compatible with FastAPI 0.70.1
 python-multipart==0.0.5
-pydantic==1.8.2  # Compatible with all dependencies
+pydantic==1.9.1  # Compatible with FastAPI (not 1.8.x)
 python-dotenv==0.19.0  # Compatible version
 
-# Database & Auth (Essential)
-supabase==1.0.3  # Older stable version with fewer dependencies
+# Database & Auth (Essential) - Temporarily removed Supabase
+# supabase==1.0.3  # Will add back later
 sqlalchemy==1.4.41  # Compatible version
 
 # AI & Vector DB (Essential)
