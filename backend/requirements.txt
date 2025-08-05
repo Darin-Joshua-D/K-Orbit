@@ -1,10 +1,10 @@
 # MINIMAL REQUIREMENTS - NO RUST COMPILATION NEEDED
 # FastAPI Core (Essential)
-fastapi==0.103.2
-uvicorn==0.24.0
+fastapi==0.95.2
+uvicorn==0.21.1
 python-multipart==0.0.6
-pydantic==2.4.2
-pydantic-settings==2.0.3
+pydantic==1.10.12
+pydantic-settings==1.2.2
 
 # Database & Auth (Essential)
 supabase==2.3.0
