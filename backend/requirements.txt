@@ -13,7 +13,7 @@ alembic==1.13.1
 
 # AI & Vector DB
 google-generativeai==0.3.2  # Google Gemini API
-pinecone-client==3.0.0
+pinecone-client==2.2.4
 tiktoken==0.5.2
 
 # Document Processing
