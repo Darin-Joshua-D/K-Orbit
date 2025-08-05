@@ -28,8 +28,8 @@ python-magic==0.4.27  # File type detection
 
 # Utilities
 httpx
-python-jose[cryptography]
-passlib[bcrypt]
+PyJWT
+bcrypt
 python-dotenv==1.0.0
 structlog
 redis
