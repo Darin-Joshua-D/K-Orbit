@@ -5,6 +5,7 @@ uvicorn>=0.27.0  # Latest stable version
 python-multipart>=0.0.9
 pydantic>=2.6.0  # Latest stable version compatible with Python 3.13
 python-dotenv>=1.0.0  # Latest stable version
+email-validator>=2.0.0  # Required for Pydantic email validation
 
 # Database & Auth (Essential)
 supabase>=2.0.0  # Supabase Python client
