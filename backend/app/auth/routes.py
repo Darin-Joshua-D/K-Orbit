@@ -7,7 +7,7 @@ import os
 from datetime import datetime
 from typing import Dict, Any
 import structlog
-from fastapi import APIRouter, HTTPException, Request, Depends, status
+from fastapi import APIRouter, HTTPException, Request, Depends, status, WebSocket
 from supabase import create_client, Client
 
 from app.auth.models import (
@@ -462,4 +462,22 @@ async def invite_user(
         raise HTTPException(
             status_code=500,
             detail="Failed to send invitation"
-        ) 
+        )
+
+
+from app.database.supabase_client import supabase
+
+@router.get("/{user_id}")
+async def get_user(user_id: str):
+    response = supabase.table("users").select("*").eq("id", user_id).execute()
+    if response.error:
+        raise HTTPException(status_code=500, detail="Error fetching user")
+    return response.data
+
+
+@router.websocket("/updates")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    # Example: Send a message when a new user is added
+    response = supabase.table("users").select("*").execute()
+    await websocket.send_json(response.data)

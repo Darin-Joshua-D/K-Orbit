@@ -11,6 +11,7 @@ from fastapi import HTTPException, Request, Response
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from starlette.middleware.base import BaseHTTPMiddleware
 from supabase import create_client, Client
+from app.database.supabase_client import supabase, supabase_admin
 
 logger = structlog.get_logger()
 
@@ -85,49 +86,26 @@ class AuthMiddleware(BaseHTTPMiddleware):
         public_prefixes = ["/ws", "/static", "/favicon.ico"]
         return any(path.startswith(prefix) for prefix in public_prefixes)
     
-    async def _verify_token(self, request: Request) -> Optional[dict]:
-        """Extract and verify JWT token from request."""
-        try:
-            # Get token from Authorization header
-            authorization = request.headers.get("Authorization")
-            if not authorization or not authorization.startswith("Bearer "):
-                return None
-            
-            token = authorization.split(" ")[1]
-            
-            # Verify JWT token with Supabase
-            try:
-                # Use Supabase to verify the token
-                response = supabase.auth.get_user(token)
-                if response.user:
-                    # Get additional user profile data
-                    profile_response = supabase.table("profiles").select("*").eq("id", response.user.id).single().execute()
-                    
-                    user_data = {
-                        "sub": response.user.id,
-                        "email": response.user.email,
-                        "role": profile_response.data.get("role") if profile_response.data else "learner",
-                        "org_id": profile_response.data.get("org_id") if profile_response.data else None,
-                        "full_name": profile_response.data.get("full_name") if profile_response.data else None,
-                    }
-                    
-                    logger.info(
-                        "User authenticated successfully",
-                        user_id=user_data["sub"],
-                        email=user_data["email"],
-                        role=user_data["role"]
-                    )
-                    
-                    return user_data
-                    
-            except Exception as e:
-                logger.error("Supabase token verification failed", error=str(e))
-                return None
-                
-        except Exception as e:
-            logger.error("Token extraction/verification failed", error=str(e))
+    async def _verify_token(self, request: Request):
+        """Verify the JWT token using Supabase."""
+        credentials: HTTPAuthorizationCredentials = security(request)
+        if not credentials:
             return None
-        
+
+        token = credentials.credentials
+        try:
+            # Decode and verify the token
+            payload = jwt.decode(token, options={"verify_signature": False})
+            user_id = payload.get("sub")
+
+            # Fetch user details from Supabase
+            response = supabase.table("users").select("*").eq("id", user_id).execute()
+            if response.data:
+                return response.data[0]
+        except jwt.ExpiredSignatureError:
+            raise HTTPException(status_code=401, detail="Token has expired")
+        except jwt.InvalidTokenError:
+            raise HTTPException(status_code=401, detail="Invalid token")
         return None
 
 
@@ -173,4 +151,4 @@ async def require_manager(request: Request) -> dict:
 
 async def require_sme(request: Request) -> dict:
     """Require SME or higher role."""
-    return await require_role(["sme", "manager", "admin", "super_admin"])(request) 
+    return await require_role(["sme", "manager", "admin", "super_admin"])(request)
