@@ -11,8 +11,7 @@ supabase==2.3.0  # Requires httpx<0.25.0
 sqlalchemy==2.0.23
 
 # AI & Vector DB (Essential)
-google-generativeai==0.3.2
-tiktoken==0.5.2
+google-generativeai==0.3.2  # Google Gemini API for chat and embeddings
 
 # Document Processing (Essential - minimal set)
 PyPDF2==3.0.1
