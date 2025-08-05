@@ -1,14 +1,14 @@
 # MINIMAL REQUIREMENTS - NO RUST COMPILATION NEEDED
 # FastAPI Core (Essential)
-fastapi==0.78.0  # Ultra-stable version
-uvicorn==0.17.6  # Compatible with FastAPI 0.78.0
-python-multipart==0.0.5  # Older stable version
-pydantic==1.9.2  # Ultra-stable version
-python-dotenv==0.20.0  # Compatible version
+fastapi==0.70.1  # Legacy stable version
+uvicorn==0.15.0  # Compatible with FastAPI 0.70.1
+python-multipart==0.0.5
+pydantic==1.8.2  # Compatible with all dependencies
+python-dotenv==0.19.0  # Compatible version
 
 # Database & Auth (Essential)
-supabase==2.3.0  # Requires httpx<0.25.0
-sqlalchemy==2.0.23
+supabase==1.0.3  # Older stable version with fewer dependencies
+sqlalchemy==1.4.41  # Compatible version
 
 # AI & Vector DB (Essential)
 google-generativeai==0.3.2  # Google Gemini API for chat and embeddings
@@ -19,8 +19,8 @@ python-docx==1.1.0
 openpyxl==3.1.2
 
 # Utilities (Essential)
-httpx==0.24.1  # Version compatible with supabase
-PyJWT==2.8.0
+httpx==0.23.0  # Compatible with all dependencies
+PyJWT==2.3.0  # Compatible version
 structlog==23.2.0
 
 # Development (Essential)
