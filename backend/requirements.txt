@@ -7,7 +7,7 @@ pydantic==1.10.12
 python-dotenv==1.0.0  # Use python-dotenv instead of pydantic-settings for v1.x
 
 # Database & Auth (Essential)
-supabase==2.3.0
+supabase==2.3.0  # Requires httpx<0.25.0
 sqlalchemy==2.0.23
 
 # AI & Vector DB (Essential)
@@ -20,7 +20,7 @@ python-docx==1.1.0
 openpyxl==3.1.2
 
 # Utilities (Essential)
-httpx==0.25.2
+httpx==0.24.1  # Version compatible with supabase
 PyJWT==2.8.0
 structlog==23.2.0
 
