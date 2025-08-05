@@ -4,7 +4,7 @@ fastapi==0.95.2
 uvicorn==0.21.1
 python-multipart==0.0.6
 pydantic==1.10.12
-pydantic-settings==1.2.2
+python-dotenv==1.0.0  # Use python-dotenv instead of pydantic-settings for v1.x
 
 # Database & Auth (Essential)
 supabase==2.3.0
@@ -22,7 +22,6 @@ openpyxl==3.1.2
 # Utilities (Essential)
 httpx==0.25.2
 PyJWT==2.8.0
-python-dotenv==1.0.0
 structlog==23.2.0
 
 # Development (Essential)
