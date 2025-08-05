@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: k-orbit-backend
+    env: python
+    region: ohio  # or your preferred region
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.7
+    autoDeploy: true 

@@ -1,10 +1,10 @@
 # MINIMAL REQUIREMENTS - NO RUST COMPILATION NEEDED
 # FastAPI Core (Essential)
-fastapi==0.88.0  # Last known good version with Python 3.11
-uvicorn==0.20.0  # Compatible with FastAPI 0.88.0
-python-multipart==0.0.6
-pydantic==1.10.7  # Last stable version before v2
-python-dotenv==1.0.0  # For environment variables
+fastapi==0.78.0  # Ultra-stable version
+uvicorn==0.17.6  # Compatible with FastAPI 0.78.0
+python-multipart==0.0.5  # Older stable version
+pydantic==1.9.2  # Ultra-stable version
+python-dotenv==0.20.0  # Compatible version
 
 # Database & Auth (Essential)
 supabase==2.3.0  # Requires httpx<0.25.0
