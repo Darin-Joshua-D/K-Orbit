@@ -1,51 +1,29 @@
-# FastAPI Core
+# MINIMAL REQUIREMENTS - NO RUST COMPILATION NEEDED
+# FastAPI Core (Essential)
 fastapi==0.104.1
-uvicorn[standard]==0.24.0
+uvicorn==0.24.0
 python-multipart==0.0.6
 pydantic==2.5.0
 pydantic-settings==2.1.0
 
-# Database & Auth
-supabase
-asyncpg
-sqlalchemy
-alembic
+# Database & Auth (Essential)
+supabase==2.3.0
+sqlalchemy==2.0.23
 
-# AI & Vector DB
-google-generativeai  # Google Gemini API
-pinecone-client
-tiktoken
+# AI & Vector DB (Essential)
+google-generativeai==0.3.2
+tiktoken==0.5.2
 
-# Document Processing
-PyPDF2==3.0.1  # PDF text extraction
-python-docx==1.1.0  # Word document processing
-openpyxl==3.1.2  # Excel file processing
-pandas  # Excel/CSV data processing
-Pillow  # Image processing
-pytesseract  # OCR for images
-opencv-python  # Advanced image/video processing
-python-magic==0.4.27  # File type detection
+# Document Processing (Essential - minimal set)
+PyPDF2==3.0.1
+python-docx==1.1.0
+openpyxl==3.1.2
 
-# Utilities
-httpx
-PyJWT
-bcrypt
-python-dotenv==1.0.0
-structlog
-redis
-
-# WebSocket & Real-time
-websockets
-python-socketio
-
-# Testing
-pytest==7.4.3
-pytest-asyncio==0.21.1
-pytest-httpx==0.26.0
+# Utilities (Essential)
 httpx==0.25.2
+PyJWT==2.8.0
+python-dotenv==1.0.0
+structlog==23.2.0
 
-# Development
-black==23.11.0
-isort==5.12.0
-flake8==6.1.0
-mypy==1.7.1 
+# Development (Essential)
+pytest==7.4.3 
