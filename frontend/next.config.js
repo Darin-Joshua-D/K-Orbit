@@ -20,7 +20,6 @@ const nextConfig = {
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL,
-    NEXT_PUBLIC_PINECONE_INDEX: process.env.NEXT_PUBLIC_PINECONE_INDEX,
     BACKEND_URL: process.env.BACKEND_URL,
   },
   typescript: {
