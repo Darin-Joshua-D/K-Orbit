@@ -6,8 +6,8 @@ python-multipart>=0.0.9
 pydantic>=2.6.0  # Latest stable version compatible with Python 3.13
 python-dotenv>=1.0.0  # Latest stable version
 
-# Database & Auth (Essential) - Temporarily removed Supabase
-# supabase==1.0.3  # Will add back later
+# Database & Auth (Essential)
+supabase>=2.0.0  # Supabase Python client
 sqlalchemy>=2.0.25  # Latest stable version
 
 # AI & Vector DB (Essential)
