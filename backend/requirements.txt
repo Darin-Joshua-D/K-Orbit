@@ -8,6 +8,7 @@ python-dotenv>=1.0.0  # Latest stable version
 
 # Database & Auth (Essential)
 supabase>=2.0.0  # Supabase Python client
+asyncpg>=0.29.0  # PostgreSQL async driver
 sqlalchemy>=2.0.25  # Latest stable version
 
 # AI & Vector DB (Essential)
