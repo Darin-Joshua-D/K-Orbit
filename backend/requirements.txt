@@ -19,6 +19,9 @@ google-generativeai==0.3.2  # Google Gemini API for chat and embeddings
 PyPDF2>=3.0.1
 python-docx>=1.1.0
 openpyxl>=3.1.2
+pandas>=2.1.0  # For Excel/CSV processing
+Pillow>=10.0.0  # For image processing
+pytesseract>=0.3.10  # For OCR (optional - requires tesseract binary)
 
 # Utilities (Essential)
 httpx>=0.26.0  # Latest stable version

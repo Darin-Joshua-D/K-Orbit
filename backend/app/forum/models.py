@@ -81,12 +81,13 @@ class VoteRequest(BaseModel):
     """Request model for voting."""
     vote_type: str = Field(..., description="Vote type (upvote/downvote)")
     
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "vote_type": "upvote"
             }
         }
+    }
 
 
 class VoteResponse(BaseModel):
@@ -146,13 +147,14 @@ class ModerationActionRequest(BaseModel):
     action: str = Field(..., description="Moderation action")
     reason: Optional[str] = Field(None, description="Reason for action")
     
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "action": "mark_helpful",
                 "reason": "Provides accurate and useful information"
             }
         }
+    }
 
 
 class TagResponse(BaseModel):

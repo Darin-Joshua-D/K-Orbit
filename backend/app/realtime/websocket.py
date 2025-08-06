@@ -390,6 +390,9 @@ async def send_system_notification(room: str, title: str, message: str, priority
     await manager.send_message_to_room(notification, room)
 
 
+# Export the router as websocket_router for main.py
+websocket_router = router
+
 # Export the manager for use in other modules
-__all__ = ["manager", "send_xp_notification", "send_badge_notification", 
+__all__ = ["websocket_router", "manager", "send_xp_notification", "send_badge_notification", 
            "send_forum_notification", "send_course_notification", "send_system_notification"] 
