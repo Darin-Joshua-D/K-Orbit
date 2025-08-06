@@ -68,7 +68,6 @@ class DatabaseManager:
         client_options = ClientOptions(
             auto_refresh_token=True,
             persist_session=True,
-            storage_key="sb-client",
             realtime={
                 "timeout": 10000,
                 "heartbeat_interval": 30000
