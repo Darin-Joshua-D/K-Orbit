@@ -15,11 +15,12 @@ import {
   Award,
   Play,
   CheckCircle,
-  Bot
+  Bot,
+  LogOut
 } from 'lucide-react';
 
 function LearnerDashboard() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
 
   // Mock data - in real app, this would come from API
@@ -333,6 +334,14 @@ function LearnerDashboard() {
               <div className="xp-badge">
                 {mockData.userStats.totalXP} XP
               </div>
+              <button
+                onClick={() => signOut()}
+                className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                title="Sign out"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Logout</span>
+              </button>
             </div>
           </div>
         </div>

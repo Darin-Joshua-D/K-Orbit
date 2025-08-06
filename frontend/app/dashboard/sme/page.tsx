@@ -18,11 +18,12 @@ import {
   Trash2,
   CheckCircle,
   Clock,
-  AlertCircle
+  AlertCircle,
+  LogOut
 } from 'lucide-react';
 
 function SMEDashboard() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -287,10 +288,20 @@ function SMEDashboard() {
                 Welcome back, {user?.user_metadata?.full_name || 'SME'}
               </p>
             </div>
-            <button className="btn-primary flex items-center space-x-2">
-              <Plus className="h-4 w-4" />
-              <span>Create New</span>
-            </button>
+            <div className="flex items-center space-x-4">
+              <button className="btn-primary flex items-center space-x-2">
+                <Plus className="h-4 w-4" />
+                <span>Create New</span>
+              </button>
+              <button
+                onClick={() => signOut()}
+                className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                title="Sign out"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Logout</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
