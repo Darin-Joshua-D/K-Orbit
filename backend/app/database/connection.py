@@ -64,14 +64,11 @@ class DatabaseManager:
         if not all([supabase_url, supabase_anon_key]):
             raise ValueError("Missing required Supabase environment variables")
         
-        # Optimized client options
+        # Optimized client options for Supabase
+        # Note: `persist_session` is handled automatically by the client.
+        # Realtime options like timeout are passed directly to `create_client`.
         client_options = ClientOptions(
             auto_refresh_token=True,
-            persist_session=True,
-            realtime={
-                "timeout": 10, 
-                "heartbeat_interval": 30
-            }
         )
         
         # Create optimized clients
