@@ -32,10 +32,10 @@ export default function HomePage() {
             </a>
           </div>
           <div className="flex items-center space-x-4">
-            <Link href="/auth/login" className="btn-ghost">
+            <Link href="/login" className="btn-ghost">
               Sign In
             </Link>
-            <Link href="/auth/register" className="btn-primary">
+            <Link href="/register" className="btn-primary">
               Get Started
             </Link>
           </div>

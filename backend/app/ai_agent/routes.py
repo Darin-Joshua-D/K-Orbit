@@ -38,7 +38,9 @@ from app.ai_agent.models import (
 logger = structlog.get_logger()
 
 # Google Gemini API configuration
-genai.configure(api_key=os.getenv("GOOGLE_GEMINI_API_KEY"))
+GOOGLE_GEMINI_API_KEY = os.getenv("GOOGLE_GEMINI_API_KEY")
+if GOOGLE_GEMINI_API_KEY:
+    genai.configure(api_key=GOOGLE_GEMINI_API_KEY)
 
 router = APIRouter()
 
@@ -137,29 +139,24 @@ async def send_chat_message(
         # Add current user message
         messages.append({"role": "user", "content": request.message})
         
-        # Call Google Gemini API
-        model = genai.GenerativeModel('gemini-pro')
+        # Call Google Gemini API or fallback
+        if GOOGLE_GEMINI_API_KEY:
+            model = genai.GenerativeModel('gemini-pro')
+            # Convert messages to Gemini format
+            conversation_text = ""
+            for msg in messages:
+                if msg["role"] == "system":
+                    conversation_text += f"System: {msg['content']}\n"
+                else:
+                    conversation_text += f"{msg['role'].capitalize()}: {msg['content']}\n"
+            gemini_response = model.generate_content(conversation_text)
+            ai_content = gemini_response.text.strip()
+        else:
+            # Fallback simple echo for development
+            ai_content = "(AI unavailable) " + request.message[::-1]
+            metadata = {"fallback": True}
         
-        # Convert messages to Gemini format
-        conversation_text = ""
-        for msg in messages:
-            if msg["role"] == "system":
-                conversation_text += f"System: {msg['content']}\n\n"
-            elif msg["role"] == "user":
-                conversation_text += f"User: {msg['content']}\n\n"
-            elif msg["role"] == "assistant":
-                conversation_text += f"Assistant: {msg['content']}\n\n"
-        
-        # Generate response
-        response = model.generate_content(
-            conversation_text,
-            generation_config=genai.types.GenerationConfig(
-                temperature=0.7,
-                max_output_tokens=1000,
-            )
-        )
-        
-        ai_content = response.text
+        # Ensure metadata exists
         
         # Save AI response with optimized batch operation
         ai_message_query = """

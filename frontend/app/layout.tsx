@@ -7,6 +7,10 @@ import { QueryProvider } from '@/lib/query/query-provider';
 import { WebSocketProvider } from '@/lib/websocket/websocket-provider';
 import { ThemeProvider } from '@/lib/theme/theme-provider';
 import { GlobalAIChat } from '@/components/ai-coach/global-ai-chat';
+import dynamic from 'next/dynamic';
+
+// Client-only logout button floating top-right
+const GlobalLogout = dynamic(() => import('@/components/global-logout').then(m => m.GlobalLogout), { ssr: false });
 
 const inter = Inter({
   subsets: ['latin'],
@@ -128,6 +132,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                   
                   {/* Global AI Chat - available on all authenticated pages */}
                   <GlobalAIChat />
+                  <GlobalLogout />
                 </div>
               </WebSocketProvider>
             </AuthProvider>
