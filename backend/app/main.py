@@ -60,7 +60,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Initialize services
     try:
         # Initialize database optimization system
-        from app.database import init_database, init_cache, init_monitoring
+        from app.database.connection import init_database, cleanup_database
+        from app.database.cache import init_cache, cleanup_cache
+        from app.database.monitoring import init_monitoring, cleanup_monitoring
+        
         await init_database()
         await init_cache()
         await init_monitoring()
@@ -70,7 +73,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         yield
     finally:
         # Cleanup database optimization resources
-        from app.database import cleanup_database, cleanup_cache, cleanup_monitoring
         await cleanup_database()
         await cleanup_cache()
         await cleanup_monitoring()

@@ -67,7 +67,11 @@ class DatabaseManager:
         # Optimized client options
         client_options = ClientOptions(
             auto_refresh_token=True,
-            persist_session=True
+            persist_session=True,
+            realtime={
+                "timeout": 10, 
+                "heartbeat_interval": 30
+            }
         )
         
         # Create optimized clients
