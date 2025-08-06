@@ -48,8 +48,27 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/register',
+        permanent: false,
+      },
+    ];
+  },
   async rewrites() {
     return [
+      // legacy auth routes
+      {
+        source: '/auth/login',
+        destination: '/login',
+      },
+      {
+        source: '/auth/register',
+        destination: '/register',
+      },
+      // existing API proxy
       {
         source: '/api/backend/:path*',
         destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/:path*`,
