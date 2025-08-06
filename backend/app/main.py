@@ -123,13 +123,12 @@ async def general_exception_handler(request: Request, exc: Exception):
 # Health check endpoint
 @app.get("/health")
 async def health_check():
-    try:
-        response = supabase.table("users").select("id").limit(1).execute()
-        if response.error:
-            raise Exception("Database connection failed")
-        return {"status": "healthy", "version": "1.0.0"}
-    except Exception as e:
-        return {"status": "unhealthy", "error": str(e)}
+    """
+    Primary health check for the API service.
+    This endpoint confirms the service is running and should not depend on external services like databases.
+    A separate endpoint like /health/db can be used for dependency health checks.
+    """
+    return {"status": "healthy", "version": "1.0.0"}
 
 
 # Include routers
