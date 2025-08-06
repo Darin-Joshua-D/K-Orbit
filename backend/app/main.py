@@ -112,14 +112,41 @@ app.add_middleware(AuthMiddleware)
 
 # Global exception handlers
 @app.exception_handler(HTTPException)
-async def http_exception_handler(request: Request, exc: HTTPException):
-    logger.error("HTTP exception occurred", status_code=exc.status_code, detail=exc.detail, path=request.url.path, method=request.method)
-    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail, "type": "http_error"})
+async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
+    """Custom HTTP exception handler."""
+    logger.error(
+        "HTTP exception occurred",
+        status_code=exc.status_code,
+        detail=exc.detail,
+        path=request.url.path,
+        method=request.method,
+    )
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail, "type": "http_error"}
+    )
 
 @app.exception_handler(Exception)
-async def general_exception_handler(request: Request, exc: Exception):
-    logger.error("Unexpected error occurred", error=str(exc), path=request.url.path, method=request.method, exc_info=True)
-    return JSONResponse(status_code=500, content={"detail": "Internal server error", "type": "server_error"})
+async def general_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    """General exception handler for unexpected errors."""
+    logger.error(
+        "Unexpected error occurred",
+        error=str(exc),
+        path=request.url.path,
+        method=request.method,
+        exc_info=True,
+    )
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "An internal server error occurred.", "type": "server_error"}
+    )
+
+
+# Root endpoint
+@app.get("/")
+async def root():
+    """Welcome endpoint."""
+    return {"message": "Welcome to K-Orbit API"}
 
 
 # Health check endpoint
@@ -172,15 +199,3 @@ if __name__ == "__main__":
         reload=os.getenv("ENVIRONMENT") != "production",
         log_config=None  # Use structlog instead
     )
-
-from unittest.mock import AsyncMock, patch
-from app.database.supabase_client import supabase
-
-@patch("app.database.supabase_client.supabase")
-async def test_fetch_user_by_email(mock_supabase):
-    mock_supabase.table.return_value.select.return_value.eq.return_value.execute.return_value = {
-        "data": [{"id": "123", "email": "test@example.com"}],
-        "error": None,
-    }
-    result = fetch_user_by_email("test@example.com")
-    assert result[0]["email"] == "test@example.com"

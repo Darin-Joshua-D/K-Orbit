@@ -10,92 +10,90 @@ import structlog
 from fastapi import HTTPException, Request, Response
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from starlette.middleware.base import BaseHTTPMiddleware
-from supabase import create_client, Client
-from app.database.supabase_client import supabase, supabase_admin
+from supabase import Client
+
+from app.database.supabase_client import supabase_admin, supabase
 
 logger = structlog.get_logger()
 
-# Initialize Supabase client
-supabase_url = os.getenv("SUPABASE_URL")
-supabase_key = os.getenv("SUPABASE_ANON_KEY")
-supabase_secret = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-
-if not all([supabase_url, supabase_key]):
-    raise ValueError("Missing required Supabase environment variables")
-
-supabase: Client = create_client(supabase_url, supabase_key)
-supabase_admin: Client = create_client(supabase_url, supabase_secret)
-
-# Security scheme
-security = HTTPBearer(auto_error=False)
+# Security scheme for extracting bearer token
+http_bearer = HTTPBearer(auto_error=False)
 
 # Public routes that don't require authentication
 PUBLIC_ROUTES = {
+    "/",
     "/health",
     "/docs",
-    "/redoc",
     "/openapi.json",
+    "/redoc",
     "/api/auth/login",
     "/api/auth/register",
     "/api/auth/refresh",
     "/api/auth/reset-password",
+    "/ws",
+    "/static",
+    "/favicon.ico",
 }
 
 
 class AuthMiddleware(BaseHTTPMiddleware):
     """Custom authentication middleware for Supabase JWT verification."""
-    
-    async def dispatch(self, request: Request, call_next):
-        """Process request and verify authentication."""
-        
+
+    async def dispatch(self, request: Request, call_next: callable) -> Response:
+        """
+        Processes the request, verifies authentication, and injects user context.
+        """
         # Skip authentication for public routes
         if self._is_public_route(request.url.path):
             return await call_next(request)
-        
+
         # Extract and verify token
-        user = await self._verify_token(request)
-        
-        if user:
-            # Inject user into request state
-            request.state.user = user
-            request.state.user_id = user.get("sub")
-            request.state.org_id = user.get("org_id")
-        else:
-            # Return 401 for protected routes without valid token
+        try:
+            user = await self._verify_token(request)
+            if user:
+                request.state.user = user
+                request.state.user_id = user.get("sub")
+                request.state.org_id = user.get("org_id")
+            else:
+                raise HTTPException(status_code=401, detail="Invalid or missing authentication token")
+        except HTTPException as e:
             logger.warning(
-                "Unauthorized access attempt",
+                "Authentication failed",
                 path=request.url.path,
                 method=request.method,
-                ip=request.client.host if request.client else None
+                error=e.detail,
+                ip=request.client.host if request.client else "unknown"
             )
-            raise HTTPException(
-                status_code=401,
-                detail="Invalid or missing authentication token"
-            )
-        
-        response = await call_next(request)
-        return response
-    
+            return Response(content=f'{{"detail":"{e.detail}"}}', status_code=e.status_code, media_type="application/json")
+
+        return await call_next(request)
+
     def _is_public_route(self, path: str) -> bool:
-        """Check if the route is public and doesn't require authentication."""
-        # Exact match
-        if path in PUBLIC_ROUTES:
-            return True
-        
-        # Prefix match for WebSocket and static files
-        public_prefixes = ["/ws", "/static", "/favicon.ico"]
-        return any(path.startswith(prefix) for prefix in public_prefixes)
-    
-    async def _verify_token(self, request: Request):
-        """Verify the JWT token using Supabase."""
-        # Use HTTPBearer to extract token
-        http_bearer = HTTPBearer()
+        """Check if the route is public."""
+        return path in PUBLIC_ROUTES or any(path.startswith(prefix) for prefix in ["/ws/", "/static/"])
+
+    async def _verify_token(self, request: Request) -> Optional[dict]:
+        """Verify the JWT token from the request."""
         credentials = await http_bearer(request)
+        if not credentials or not credentials.credentials:
+            return None
+
+        token = credentials.credentials
+        try:
+            # First, try to validate with Supabase client (standard user JWTs)
+            user_data = supabase.auth.get_user(token)
+            if user_data:
+                return user_data.user.dict()
+        except Exception:
+            # If Supabase client fails, try admin client for service roles
+            try:
+                user_data = supabase_admin.auth.get_user(token)
+                if user_data:
+                    return user_data.user.dict()
+            except Exception as e:
+                logger.warning("Token validation failed for both user and admin", error=str(e))
+                return None
         
-        if credentials:
-            token = credentials.credentials
-            user_data = await self._decode_and_validate_token(token)
-            return user_data
         return None
 
 

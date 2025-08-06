@@ -69,21 +69,27 @@ class DatabaseManager:
         # Realtime options like timeout are passed directly to `create_client`.
         client_options = ClientOptions(
             auto_refresh_token=True,
+            postgrest_client_timeout=10,  # Example: set a reasonable timeout
         )
         
         # Create optimized clients
-        self._supabase_client = create_client(
-            supabase_url, 
-            supabase_anon_key,
-            options=client_options
-        )
-        
-        if supabase_service_key:
-            self._supabase_admin_client = create_client(
-                supabase_url,
-                supabase_service_key,
+        try:
+            self._supabase_client = create_client(
+                supabase_url, 
+                supabase_anon_key,
                 options=client_options
             )
+            
+            if supabase_service_key:
+                self._supabase_admin_client = create_client(
+                    supabase_url,
+                    supabase_service_key,
+                    options=client_options
+                )
+            logger.info("Supabase clients initialized successfully")
+        except Exception as e:
+            logger.error("Failed to initialize Supabase clients", error=str(e))
+            raise
     
     async def _init_pg_pool(self):
         """Initialize PostgreSQL connection pool for direct queries."""
