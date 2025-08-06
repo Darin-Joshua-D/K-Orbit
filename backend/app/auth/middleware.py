@@ -88,24 +88,14 @@ class AuthMiddleware(BaseHTTPMiddleware):
     
     async def _verify_token(self, request: Request):
         """Verify the JWT token using Supabase."""
-        credentials: HTTPAuthorizationCredentials = security(request)
-        if not credentials:
-            return None
-
-        token = credentials.credentials
-        try:
-            # Decode and verify the token
-            payload = jwt.decode(token, options={"verify_signature": False})
-            user_id = payload.get("sub")
-
-            # Fetch user details from Supabase
-            response = supabase.table("users").select("*").eq("id", user_id).execute()
-            if response.data:
-                return response.data[0]
-        except jwt.ExpiredSignatureError:
-            raise HTTPException(status_code=401, detail="Token has expired")
-        except jwt.InvalidTokenError:
-            raise HTTPException(status_code=401, detail="Invalid token")
+        # Use HTTPBearer to extract token
+        http_bearer = HTTPBearer()
+        credentials = await http_bearer(request)
+        
+        if credentials:
+            token = credentials.credentials
+            user_data = await self._decode_and_validate_token(token)
+            return user_data
         return None
 
 
