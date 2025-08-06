@@ -50,11 +50,7 @@ const nextConfig = {
   },
   async redirects() {
     return [
-      {
-        source: '/',
-        destination: '/register',
-        permanent: false,
-      },
+      // Removed automatic redirect to /register - let users see the landing page first
     ];
   },
   async rewrites() {

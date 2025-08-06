@@ -55,7 +55,7 @@ export default function HomePage() {
             AI-powered learning experiences, gamification, and intelligent insights.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/auth/register" className="btn-primary inline-flex items-center px-8 py-4 text-lg">
+            <Link href="/register" className="btn-primary inline-flex items-center px-8 py-4 text-lg">
               Start Free Trial
               <ArrowRight className="ml-2 w-5 h-5" />
             </Link>
@@ -176,7 +176,7 @@ export default function HomePage() {
           <p className="text-xl text-primary-foreground/80 mb-8 max-w-2xl mx-auto">
             Start your free trial today and see the difference AI-powered learning can make.
           </p>
-          <Link href="/auth/register" className="btn-secondary inline-flex items-center px-8 py-4 text-lg">
+          <Link href="/register" className="btn-secondary inline-flex items-center px-8 py-4 text-lg">
             Get Started Now
             <ArrowRight className="ml-2 w-5 h-5" />
           </Link>
