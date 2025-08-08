@@ -10,7 +10,7 @@ import { GlobalAIChat } from '@/components/ai-coach/global-ai-chat';
 import dynamic from 'next/dynamic';
 
 // Client-only logout button floating top-right
-const GlobalLogout = dynamic(() => import('@/components/global-logout').then(m => m.GlobalLogout), { ssr: false });
+// const GlobalLogout = dynamic(() => import('@/components/global-logout').then(m => m.GlobalLogout), { ssr: false });
 
 const inter = Inter({
   subsets: ['latin'],
@@ -132,7 +132,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                   
                   {/* Global AI Chat - available on all authenticated pages */}
                   <GlobalAIChat />
-                  <GlobalLogout />
+                  {/* <GlobalLogout /> */}
                 </div>
               </WebSocketProvider>
             </AuthProvider>
