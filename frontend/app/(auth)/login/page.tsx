@@ -45,9 +45,9 @@ export default function LoginPage() {
       <div className="w-full max-w-md relative z-10">
         {/* Logo and Header */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl mb-4 hover:scale-105 transition-transform cursor-pointer">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl mb-4">
             <Brain className="w-8 h-8 text-white" />
-          </Link>
+          </div>
           <h1 className="text-2xl font-bold">Welcome back to K-Orbit</h1>
           <p className="text-muted-foreground mt-2">
             Sign in to continue your learning journey

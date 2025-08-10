@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/lib/auth/auth-provider';
 import { withAuth } from '@/lib/auth/auth-provider';
-import { GlobalAIChat } from '@/components/ai-coach/global-ai-chat';
 
 import { 
   BookOpen, 
@@ -394,8 +393,6 @@ function LearnerDashboard() {
         {renderContent()}
       </div>
 
-      {/* Global AI Chat */}
-      <GlobalAIChat />
 
     </div>
   );

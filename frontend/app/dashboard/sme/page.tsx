@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/lib/auth/auth-provider';
 import { withAuth } from '@/lib/auth/auth-provider';
-import { GlobalAIChat } from '@/components/ai-coach/global-ai-chat';
 import { 
   Upload, 
   FileText, 
@@ -368,7 +367,6 @@ function SMEDashboard() {
         {/* Main Content */}
         {renderContent()}
       </div>
-      <GlobalAIChat />
     </div>
   );
 }

@@ -3,7 +3,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useAuth, useRole } from "@/lib/auth/auth-provider";
-import { GlobalAIChat } from "@/components/ai-coach/global-ai-chat";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -204,7 +203,6 @@ export default function ManagerDashboardPage() {
             </div>
           </div>
         </div>
-        <GlobalAIChat />
       </div>
     </div>
   );

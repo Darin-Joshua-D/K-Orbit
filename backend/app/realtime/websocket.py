@@ -64,13 +64,6 @@ class ConnectionManager:
         """Remove WebSocket connection."""
         user_info = self.connection_metadata.get(websocket)
         if not user_info:
-            # Try to find and remove the websocket from active connections even without metadata
-            for user_id, connections in list(self.active_connections.items()):
-                if websocket in connections:
-                    connections.discard(websocket)
-                    if not connections:
-                        del self.active_connections[user_id]
-                    break
             return
         
         user_id = user_info["sub"]
@@ -98,17 +91,10 @@ class ConnectionManager:
     async def send_personal_message(self, message: dict, websocket: WebSocket):
         """Send message to specific WebSocket connection."""
         try:
-            # Check if WebSocket is still connected and in active connections
-            if (websocket.client_state == WebSocketState.CONNECTED and 
-                websocket in self.connection_metadata):
+            if websocket.client_state == WebSocketState.CONNECTED:
                 await websocket.send_text(json.dumps(message))
-            else:
-                # Clean up disconnected WebSocket
-                self.disconnect(websocket)
         except Exception as e:
             logger.error("Failed to send WebSocket message", error=str(e))
-            # Clean up the connection if send fails
-            self.disconnect(websocket)
     
     async def send_message_to_user(self, message: dict, user_id: str):
         """Send message to all connections of a specific user."""
@@ -226,20 +212,16 @@ async def websocket_notifications(websocket: WebSocket, token: str):
             except WebSocketDisconnect:
                 break
             except json.JSONDecodeError:
-                # Only send error if connection is still active
-                if websocket.client_state == WebSocketState.CONNECTED:
-                    await manager.send_personal_message({
-                        "type": "error",
-                        "message": "Invalid JSON format"
-                    }, websocket)
+                await manager.send_personal_message({
+                    "type": "error",
+                    "message": "Invalid JSON format"
+                }, websocket)
             except Exception as e:
                 logger.error("Error handling WebSocket message", error=str(e))
-                # Only send error if connection is still active
-                if websocket.client_state == WebSocketState.CONNECTED:
-                    await manager.send_personal_message({
-                        "type": "error", 
-                        "message": "Message processing failed"
-                    }, websocket)
+                await manager.send_personal_message({
+                    "type": "error", 
+                    "message": "Message processing failed"
+                }, websocket)
                 
     except HTTPException as e:
         await websocket.close(code=4001, reason=e.detail)

@@ -66,9 +66,9 @@ export default function RegisterPage() {
       <div className="w-full max-w-md">
         {/* Logo and Header */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl mb-4 hover:scale-105 transition-transform cursor-pointer">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl mb-4">
             <Brain className="w-8 h-8 text-white" />
-          </Link>
+          </div>
           <h1 className="text-2xl font-bold">Join K-Orbit</h1>
           <p className="text-muted-foreground mt-2">
             Create your account and start your learning journey
