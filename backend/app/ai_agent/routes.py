@@ -167,7 +167,7 @@ async def send_chat_message(
         
         # Get relevant knowledge context with caching
         knowledge_context = await _get_knowledge_context_cached(
-            request.message, user["org_id"], cache
+            request.message, user.get("org_id"), cache
         )
         
         # Prepare system prompt
@@ -436,7 +436,7 @@ async def search_knowledge(
         WHERE org_id = %s AND embedding IS NOT NULL
         ORDER BY embedding <=> %s::vector
         LIMIT %s
-        """, user["org_id"], f"[{','.join(map(str, query_embedding))}]", request.limit)
+        """, user.get("org_id"), f"[{','.join(map(str, query_embedding))}]", request.limit)
         
         results = []
         for doc in search_response:
@@ -571,7 +571,7 @@ async def generate_learning_path(
         ORDER BY estimated_duration
         LIMIT 5
         """
-        courses_result = await db_manager.execute_query(courses_query, user["org_id"])
+        courses_result = await db_manager.execute_query(courses_query, user.get("org_id"))
         
         # In a real implementation, you'd use AI to analyze and recommend
         # Here's a simplified version
@@ -619,6 +619,10 @@ async def _get_knowledge_context_cached(query: str, org_id: str, cache, limit: i
     """
     Get relevant knowledge context with caching support.
     """
+    # Handle missing org_id gracefully
+    if not org_id:
+        return []
+        
     try:
         # Try to get from cache first
         cache_key = f"knowledge_context:{org_id}:{query}"
