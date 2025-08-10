@@ -196,7 +196,7 @@ async def send_chat_message(
         
         # Call Google Gemini API or fallback
         if GOOGLE_GEMINI_API_KEY:
-            model = genai.GenerativeModel('gemini-pro')
+            model = genai.GenerativeModel('gemini-2.5-flash')
             # Convert messages to Gemini format
             conversation_text = ""
             for msg in messages:
@@ -220,7 +220,7 @@ async def send_chat_message(
         """
         
         metadata = {
-            "model": "gemini-pro",
+            "model": "gemini-2.5-flash",
             "sources": [ctx["title"] for ctx in knowledge_context[:3]],
             "processing_time_ms": int((time.time() - start_time) * 1000),
             "tokens_used": len(ai_content.split()) if ai_content else 0
@@ -502,7 +502,7 @@ async def generate_quiz(
         """
         
         # Use Google Gemini for quiz generation
-        model = genai.GenerativeModel('gemini-pro')
+        model = genai.GenerativeModel('gemini-2.5-flash')
         
         full_prompt = f"""You are an expert quiz generator for corporate learning.
 
@@ -540,7 +540,7 @@ async def generate_quiz(
             metadata={
                 "source_length": len(request.content),
                 "difficulty": request.difficulty,
-                "generated_by": "google/gemini-pro"
+                "generated_by": "google/gemini-2.5-flash"
             },
             generated_at=datetime.utcnow()
         )
