@@ -12,6 +12,7 @@ from fastapi import APIRouter, HTTPException, Request, Depends, BackgroundTasks
 from fastapi.responses import StreamingResponse
 import google.generativeai as genai
 import json
+import uuid
 
 from app.auth.middleware import get_current_user
 from app.database import get_db_manager, get_query_cache, get_db_metrics
@@ -65,6 +66,10 @@ def _json_store_save(data: Dict[str, Any]) -> None:
     except Exception:
         pass
 
+def _generate_uuid() -> str:
+    """Generate a proper UUID string for JSON fallback."""
+    return str(uuid.uuid4())
+
 
 @router.post("/chat", response_model=ChatMessageResponse)
 async def send_chat_message(
@@ -111,12 +116,13 @@ async def send_chat_message(
             except Exception as db_err:
                 if USE_JSON_FALLBACK:
                     store = _json_store_load()
-                    conversation_id = f"local_{int(time.time()*1000)}"
+                    conversation_id = _generate_uuid()
                     store["conversations"][conversation_id] = {
                         **conversation_data,
                         "id": conversation_id
                     }
                     _json_store_save(store)
+                    logger.info("Created conversation in JSON fallback", conversation_id=conversation_id)
                 else:
                     raise
         
@@ -137,14 +143,18 @@ async def send_chat_message(
         except Exception:
             if USE_JSON_FALLBACK:
                 store = _json_store_load()
+                user_message_id = _generate_uuid()
                 store.setdefault("messages", {}).setdefault(conversation_id, []).append({
-                    "id": f"local_{int(time.time()*1000)}",
+                    "id": user_message_id,
                     "conversation_id": conversation_id,
                     "role": "user",
                     "content": request.message,
                     "created_at": datetime.utcnow().isoformat()
                 })
                 _json_store_save(store)
+                logger.info("Saved user message in JSON fallback", message_id=user_message_id)
+            else:
+                raise
         
         # Record query performance
         query_time = time.time() - start_time
@@ -229,9 +239,9 @@ async def send_chat_message(
         except Exception:
             if USE_JSON_FALLBACK:
                 store = _json_store_load()
-                msg_id = f"local_{int(time.time()*1000)}"
+                ai_message_id = _generate_uuid()
                 store.setdefault("messages", {}).setdefault(conversation_id, []).append({
-                    "id": msg_id,
+                    "id": ai_message_id,
                     "conversation_id": conversation_id,
                     "role": "assistant",
                     "content": ai_content,
@@ -239,7 +249,7 @@ async def send_chat_message(
                     "created_at": datetime.utcnow().isoformat()
                 })
                 _json_store_save(store)
-                ai_message_id = msg_id
+                logger.info("Saved AI message in JSON fallback", message_id=ai_message_id)
             else:
                 raise
         
@@ -290,12 +300,14 @@ async def send_chat_message(
         )
         
     except Exception as e:
-        await metrics.record_query("ai_chat_error", time.time() - start_time, False, str(e))
         logger.error("AI chat failed", error=str(e), user_id=(user.get("sub") or user.get("id")))
-        raise HTTPException(
-            status_code=500,
-            detail="Failed to process chat message"
-        )
+        
+        # Safe error recording without crashing
+        try:
+            await metrics.record_query("ai_chat_error", time.time() - start_time, False, str(e))
+        except Exception as metrics_error:
+            logger.error("Failed to record metrics", error=str(metrics_error))
+        raise HTTPException(status_code=500, detail="AI service temporarily unavailable")
 
 
 @router.get("/conversations", response_model=List[ConversationResponse])

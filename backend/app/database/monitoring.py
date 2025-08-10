@@ -192,15 +192,6 @@ class DatabaseMetrics:
                 await callback(alert)
             except Exception as e:
                 logger.error("Alert callback error", error=str(e))
-        
-        logger.log(
-            level.value,
-            "Database alert",
-            message=message,
-            metric=metric_name,
-            value=current_value,
-            threshold=threshold
-        )
     
     async def record_query(self, query: str, execution_time: float, 
                           success: bool, error_message: Optional[str] = None,
