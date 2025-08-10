@@ -176,7 +176,7 @@ class DatabaseManager:
                     result = [dict(row) for row in rows]
             else:
                 # Fallback to Supabase
-                response = await self._supabase_client.rpc('exec_sql', {
+                response = self._supabase_client.rpc('exec_sql', {
                     'sql': query,
                     'params': list(args)
                 }).execute()
