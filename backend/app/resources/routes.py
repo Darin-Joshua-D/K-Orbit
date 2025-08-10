@@ -70,10 +70,10 @@ MAX_FILE_SIZE = 100 * 1024 * 1024  # 100MB (increased for videos)
 async def upload_file(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
-    user: dict = Depends(require_sme)
+    user: dict = Depends(get_current_user)
 ):
     """
-    Upload a file to the knowledge base (SME and managers only).
+    Upload a file to the knowledge base (all authenticated users).
     """
     try:
         # Validate file type
@@ -103,7 +103,9 @@ async def upload_file(
         )
         
         if storage_response.get("error"):
-            raise HTTPException(status_code=500, detail="Failed to upload file to storage")
+            error_msg = storage_response.get("error", {}).get("message", "Unknown storage error")
+            logger.error("Storage upload failed", error=error_msg, filename=file.filename)
+            raise HTTPException(status_code=500, detail=f"File upload failed: {error_msg}")
         
         # Get public URL
         public_url = supabase.storage.from_("knowledge-documents").get_public_url(unique_filename)
@@ -114,9 +116,9 @@ async def upload_file(
             "original_name": file.filename,
             "mime_type": file.content_type,
             "size_bytes": len(file_content),
-            "url": public_url.get("publicURL", ""),
+            "url": public_url if isinstance(public_url, str) else public_url.get("publicURL", ""),
             "uploaded_by": user["sub"],
-            "org_id": user["org_id"],
+            "org_id": user.get("org_id"),
             "is_processed": False,
             "metadata": {
                 "upload_ip": "unknown",  # In production, capture real IP
@@ -128,7 +130,7 @@ async def upload_file(
         uploaded_file = file_response.data[0]
         
         # Schedule background processing
-        background_tasks.add_task(process_document, uploaded_file["id"], file_content, user["org_id"])
+        background_tasks.add_task(process_document, uploaded_file["id"], file_content, user.get("org_id"))
         
         logger.info(
             "File uploaded successfully",
@@ -312,10 +314,12 @@ async def list_uploads(
         
         if user.get("role") == "manager":
             # Managers can see all org files
-            query = query.eq("org_id", user["org_id"])
+            if user.get("org_id"):
+                query = query.eq("org_id", user["org_id"])
         elif user.get("role") == "sme":
             # SMEs can see all org files
-            query = query.eq("org_id", user["org_id"])
+            if user.get("org_id"):
+                query = query.eq("org_id", user["org_id"])
         else:
             # Learners can only see their own uploads
             query = query.eq("uploaded_by", user["sub"])
