@@ -14,6 +14,7 @@ interface ChatMessage {
     sources?: string[];
     confidence?: number;
     tokens?: number;
+    feature?: 'knowledge' | 'quiz' | 'suggestions' | 'learning_path' | 'feedback';
   };
   createdAt: Date;
 }
@@ -289,6 +290,25 @@ export function AIChat({ className, isMinimized = false, onToggleMinimize }: AIC
                   : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white rounded-bl-sm'
               )}>
                 <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                
+                {/* Feature badges */}
+                {msg.role === 'assistant' && msg.metadata?.feature && (
+                  <div className="mt-2 flex items-center gap-2 text-xs">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-primary/10 text-primary">
+                      {msg.metadata.feature === 'knowledge' && 'Knowledge'}
+                      {msg.metadata.feature === 'quiz' && 'Quiz'}
+                      {msg.metadata.feature === 'suggestions' && 'Suggestions'}
+                      {msg.metadata.feature === 'learning_path' && 'Learning Path'}
+                      {msg.metadata.feature === 'feedback' && 'Feedback'}
+                    </span>
+                    {typeof msg.metadata.confidence === 'number' && (
+                      <span className="text-gray-500">Confidence: {(msg.metadata.confidence * 100).toFixed(0)}%</span>
+                    )}
+                    {typeof msg.metadata.tokens === 'number' && (
+                      <span className="text-gray-500">Tokens: {msg.metadata.tokens}</span>
+                    )}
+                  </div>
+                )}
                 
                 {/* AI Sources */}
                 {msg.role === 'assistant' && msg.metadata?.sources && msg.metadata.sources.length > 0 && (
