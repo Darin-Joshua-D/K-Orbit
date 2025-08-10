@@ -51,8 +51,9 @@ class AuthMiddleware(BaseHTTPMiddleware):
         try:
             user = await self._verify_token(request)
             if user:
+                user["sub"] = user.get("sub") or user.get("id")
                 request.state.user = user
-                request.state.user_id = user.get("sub")
+                request.state.user_id = user["sub"]
                 request.state.org_id = user.get("org_id")
             else:
                 raise HTTPException(status_code=401, detail="Invalid or missing authentication token")

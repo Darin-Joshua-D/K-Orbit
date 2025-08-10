@@ -41,6 +41,9 @@ logger = structlog.get_logger()
 GOOGLE_GEMINI_API_KEY = os.getenv("GOOGLE_GEMINI_API_KEY")
 if GOOGLE_GEMINI_API_KEY:
     genai.configure(api_key=GOOGLE_GEMINI_API_KEY)
+    logger.info("Google Gemini API key found and configured.")
+else:
+    logger.warning("Google Gemini API key not found. AI will use fallback.")
 
 router = APIRouter()
 
@@ -220,7 +223,7 @@ async def send_chat_message(
         
     except Exception as e:
         await metrics.record_query("ai_chat_error", time.time() - start_time, False, str(e))
-        logger.error("AI chat failed", error=str(e), user_id=user["sub"])
+        logger.error("AI chat failed", error=str(e), user_id=(user.get("sub") or user.get("id")))
         raise HTTPException(
             status_code=500,
             detail="Failed to process chat message"
