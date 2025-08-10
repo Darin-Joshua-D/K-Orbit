@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/lib/auth/auth-provider';
 import { withAuth } from '@/lib/auth/auth-provider';
 import { 
@@ -23,9 +23,58 @@ import {
 } from 'lucide-react';
 
 function SMEDashboard() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, session } = useAuth() as any;
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
+  const [uploads, setUploads] = useState<any[] | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const loadUploads = async () => {
+      try {
+        const res = await fetch('/api/resources/uploads', {
+          headers: { Authorization: `Bearer ${session?.access_token || ''}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUploads(data);
+        }
+      } catch {}
+    };
+    loadUploads();
+  }, [session]);
+
+  const handlePickFiles = () => fileInputRef.current?.click();
+
+  const handleFilesSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const res = await fetch('/api/resources/uploads', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session?.access_token || ''}` },
+        body: form,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error || 'Upload failed');
+      }
+      // Refresh uploads
+      const list = await fetch('/api/resources/uploads', {
+        headers: { Authorization: `Bearer ${session?.access_token || ''}` },
+      });
+      if (list.ok) setUploads(await list.json());
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   // Mock data - in real app, this would come from API
   const mockData = {
@@ -174,20 +223,19 @@ function SMEDashboard() {
       <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Upload New Document</h3>
-          <button className="btn-primary flex items-center space-x-2">
+          <button onClick={handlePickFiles} disabled={uploading} className="btn-primary flex items-center space-x-2">
             <Upload className="h-4 w-4" />
-            <span>Upload Files</span>
+            <span>{uploading ? 'Uploading…' : 'Upload Files'}</span>
           </button>
+          <input ref={fileInputRef} type="file" className="hidden" onChange={handleFilesSelected} />
         </div>
-        
+        {/* Drop area (visual only) */}
         <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
           <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <p className="text-lg font-medium text-gray-600 dark:text-gray-400">
-            Drag and drop files here, or click to browse
+            Drag and drop files here, or click the button to browse
           </p>
-          <p className="text-sm text-gray-500 mt-2">
-            Supports PDF, DOC, DOCX, TXT, MD files up to 50MB
-          </p>
+          <p className="text-sm text-gray-500 mt-2">Supports PDF, DOC, DOCX, TXT, MD files up to 50MB</p>
         </div>
       </div>
 
@@ -210,40 +258,27 @@ function SMEDashboard() {
           </button>
         </div>
 
-        {/* Documents List */}
+        {/* Documents List (real if available, else mock) */}
         <div className="space-y-3">
-          {mockData.recentDocuments.map((doc) => (
-            <div key={doc.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+          {(uploads ?? mockData.recentDocuments).map((doc: any) => (
+            <div key={doc.id || doc.filename} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
               <div className="flex items-center space-x-4">
-                {getStatusIcon(doc.status)}
+                {getStatusIcon(doc.status || (doc.is_processed ? 'processed' : 'processing'))}
                 <div className="flex-1">
-                  <h4 className="font-medium">{doc.title}</h4>
+                  <h4 className="font-medium">{doc.title || doc.original_name}</h4>
                   <div className="flex items-center space-x-4 text-sm text-gray-500 mt-1">
-                    <span>{doc.type}</span>
-                    <span>{doc.size}</span>
-                    <span>{new Date(doc.uploadedAt).toLocaleDateString()}</span>
+                    <span>{doc.type || doc.mime_type?.split('/')?.[1]?.toUpperCase() || 'FILE'}</span>
+                    {doc.size_bytes ? <span>{Math.ceil(doc.size_bytes / 1024)} KB</span> : <span>{doc.size || ''}</span>}
+                    <span>{new Date(doc.uploaded_at || doc.uploadedAt || Date.now()).toLocaleDateString()}</span>
                   </div>
                 </div>
               </div>
-              
               <div className="flex items-center space-x-2">
-                <div className="text-right text-sm mr-4">
-                  <p className="font-medium">{doc.views} views</p>
-                  <p className="text-gray-500">{doc.downloads} downloads</p>
-                </div>
-                
-                <button className="p-2 text-gray-400 hover:text-blue-600 transition-colors">
-                  <Eye className="h-4 w-4" />
-                </button>
-                <button className="p-2 text-gray-400 hover:text-green-600 transition-colors">
-                  <Download className="h-4 w-4" />
-                </button>
-                <button className="p-2 text-gray-400 hover:text-yellow-600 transition-colors">
-                  <Edit className="h-4 w-4" />
-                </button>
-                <button className="p-2 text-gray-400 hover:text-red-600 transition-colors">
-                  <Trash2 className="h-4 w-4" />
-                </button>
+                {doc.url && (
+                  <a className="p-2 text-gray-400 hover:text-green-600 transition-colors" href={doc.url} target="_blank" rel="noreferrer">
+                    <Download className="h-4 w-4" />
+                  </a>
+                )}
               </div>
             </div>
           ))}

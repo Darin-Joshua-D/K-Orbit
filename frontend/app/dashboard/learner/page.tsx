@@ -171,6 +171,26 @@ function LearnerDashboard() {
         </div>
       </div>
 
+      {/* Org Chart (lightweight placeholder) */}
+      <div className="glass p-6 rounded-xl">
+        <h2 className="text-xl font-semibold mb-4">Organization Chart</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div className="p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+            <p className="font-semibold mb-1">You</p>
+            <p className="text-gray-600 dark:text-gray-400">{user?.user_metadata?.full_name || 'Learner'}</p>
+          </div>
+          <div className="p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+            <p className="font-semibold mb-1">Manager</p>
+            <p className="text-gray-600 dark:text-gray-400">Assigned manager</p>
+          </div>
+          <div className="p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+            <p className="font-semibold mb-1">Team</p>
+            <p className="text-gray-600 dark:text-gray-400">Peers in your department</p>
+          </div>
+        </div>
+        <p className="text-xs text-gray-500 mt-2">This is a simple visual. We can wire this to live data later.</p>
+      </div>
+
       {/* Current Courses */}
       <div className="glass p-6 rounded-xl">
         <h2 className="text-xl font-semibold mb-4">Continue Learning</h2>
