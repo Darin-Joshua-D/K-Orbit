@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { LogOut, Send } from "lucide-react";
+import { LogOut, Send, Users, BarChart3 } from "lucide-react";
 
 interface OrgInsights {
   organization_id: string;
@@ -29,6 +29,7 @@ export default function ManagerDashboardPage() {
   const [announceMsg, setAnnounceMsg] = useState("");
   const [announceRole, setAnnounceRole] = useState("learner");
   const [announceSending, setAnnounceSending] = useState(false);
+  const [reportees, setReportees] = useState<{ users: any[]; total: number } | null>(null);
 
   useEffect(() => {
     const fetchInsights = async () => {
@@ -46,6 +47,17 @@ export default function ManagerDashboardPage() {
     };
     fetchInsights();
   }, [hasAccess, period]);
+
+  useEffect(() => {
+    const fetchReportees = async () => {
+      if (!hasAccess) return;
+      try {
+        const res = await fetch('/api/users/reportees');
+        if (res.ok) setReportees(await res.json());
+      } catch {}
+    };
+    fetchReportees();
+  }, [hasAccess]);
 
   const engagementPct = useMemo(() => {
     if (!insights) return 0;
@@ -93,13 +105,13 @@ export default function ManagerDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         <header className="space-y-1">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Manager Dashboard</h1>
-              <p className="text-muted-foreground">Welcome{user?.email ? `, ${user.email}` : ""}</p>
+              <h1 className="text-2xl font-bold">Manager Dashboard</h1>
+              <p className="text-gray-600 dark:text-gray-400">Welcome{user?.email ? `, ${user.email}` : ""}</p>
             </div>
             <Button variant="outline" onClick={signOut} className="gap-2">
               <LogOut className="h-4 w-4" />
@@ -109,23 +121,23 @@ export default function ManagerDashboardPage() {
         </header>
 
         {/* Org overview cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="p-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="glass-card p-6">
             <p className="text-sm text-muted-foreground">Total users</p>
             <p className="text-2xl font-semibold">{insights?.overview.total_users ?? (loading ? '…' : 0)}</p>
-          </Card>
-          <Card className="p-4">
+          </div>
+          <div className="glass-card p-6">
             <p className="text-sm text-muted-foreground">Active learners ({period})</p>
             <p className="text-2xl font-semibold">{insights?.overview.active_learners ?? (loading ? '…' : 0)}</p>
-          </Card>
-          <Card className="p-4">
+          </div>
+          <div className="glass-card p-6">
             <p className="text-sm text-muted-foreground">Engagement</p>
             <p className="text-2xl font-semibold">{loading ? '…' : `${engagementPct}%`}</p>
-          </Card>
+          </div>
         </div>
 
         {/* Top performers */}
-        <Card className="p-4">
+        <div className="glass p-6 rounded-xl">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-semibold">Top performers</h2>
             <select value={period} onChange={(e) => setPeriod(e.target.value)} className="border rounded px-2 py-1 text-sm">
@@ -148,10 +160,33 @@ export default function ManagerDashboardPage() {
               )}
             </ul>
           )}
-        </Card>
+        </div>
+
+        {/* Reportees overview */}
+        <div className="glass p-6 rounded-xl">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-semibold flex items-center gap-2"><Users className="h-4 w-4" /> Your team</h2>
+            <span className="text-sm text-gray-500">{reportees?.total ?? 0} members</span>
+          </div>
+          {reportees?.users?.length ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {reportees.users.slice(0, 6).map((u: any) => (
+                <div key={u.id} className="flex items-center justify-between p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg">
+                  <div>
+                    <p className="font-medium">{u.full_name}</p>
+                    <p className="text-xs text-gray-500">{u.email}</p>
+                  </div>
+                  <span className="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700">{u.role}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">No team members found</p>
+          )}
+        </div>
 
         {/* Announcements */}
-        <Card className="p-4 space-y-3">
+        <div className="glass p-6 rounded-xl space-y-3">
           <h2 className="font-semibold">Send announcement</h2>
           <div className="grid gap-2 md:grid-cols-[1fr,160px] items-start">
             <Textarea value={announceMsg} onChange={(e) => setAnnounceMsg(e.target.value)} placeholder="Write a short message…" />
@@ -167,7 +202,7 @@ export default function ManagerDashboardPage() {
               </Button>
             </div>
           </div>
-        </Card>
+        </div>
       </div>
     </div>
   );
