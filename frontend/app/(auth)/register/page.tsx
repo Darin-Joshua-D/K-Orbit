@@ -13,6 +13,7 @@ export default function RegisterPage() {
     fullName: '',
     email: '',
     organization: '',
+    role: 'learner',
     password: '',
     confirmPassword: ''
   });
@@ -45,7 +46,7 @@ export default function RegisterPage() {
       await signUp(formData.email, formData.password, {
         full_name: formData.fullName,
         organization: formData.organization,
-        role: 'learner' // Default role
+        role: formData.role || 'learner'
       });
       // Navigation will be handled by AuthProvider
     } catch (error: any) {
@@ -53,7 +54,7 @@ export default function RegisterPage() {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData(prev => ({
       ...prev,
       [e.target.name]: e.target.value
@@ -148,6 +149,25 @@ export default function RegisterPage() {
                   disabled={loading}
                 />
               </div>
+            </div>
+
+            {/* Role Field */}
+            <div className="space-y-2">
+              <label htmlFor="role" className="text-sm font-medium">
+                Role (default is learner)
+              </label>
+              <select
+                id="role"
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                className="input"
+                disabled={loading}
+              >
+                <option value="learner">Learner</option>
+                <option value="sme">SME</option>
+                <option value="manager">Manager</option>
+              </select>
             </div>
 
             {/* Password Field */}
