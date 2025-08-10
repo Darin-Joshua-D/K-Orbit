@@ -1,9 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000';
 
 export async function GET(request: NextRequest) {
   try {
+    // Create Supabase client for route handler
+    const supabase = createRouteHandlerClient({ cookies });
+    
+    // Get the current user session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError || !session) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const limit = searchParams.get('limit') || '20';
     const offset = searchParams.get('offset') || '0';
@@ -15,7 +30,7 @@ export async function GET(request: NextRequest) {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': request.headers.get('Authorization') || '',
+        'Authorization': `Bearer ${session.access_token}`,
       },
     });
 
@@ -37,6 +52,19 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Create Supabase client for route handler
+    const supabase = createRouteHandlerClient({ cookies });
+    
+    // Get the current user session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError || !session) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const formData = await request.formData();
     
     const backendUrl = `${BACKEND_URL}/api/resources/upload`;
@@ -45,7 +73,7 @@ export async function POST(request: NextRequest) {
     const response = await fetch(backendUrl, {
       method: 'POST',
       headers: {
-        'Authorization': request.headers.get('Authorization') || '',
+        'Authorization': `Bearer ${session.access_token}`,
       },
       body: formData,
     });
