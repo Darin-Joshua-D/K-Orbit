@@ -273,6 +273,8 @@ async def send_chat_message(
                     conv["message_count"] = int(conv.get("message_count", 0)) + 2
                     conv["last_message_at"] = datetime.utcnow().isoformat()
                     _json_store_save(store)
+            # Note: UPDATE queries may fail with RPC fallback, but this is non-critical
+            # since the conversation and messages are already saved successfully
         
         # Record performance metrics
         total_time = time.time() - start_time
