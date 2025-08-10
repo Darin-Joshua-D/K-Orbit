@@ -11,6 +11,7 @@ import structlog
 from fastapi import APIRouter, HTTPException, Request, Depends, BackgroundTasks
 from fastapi.responses import StreamingResponse
 import google.generativeai as genai
+import json
 
 from app.auth.middleware import get_current_user
 from app.database import get_db_manager, get_query_cache, get_db_metrics
@@ -47,6 +48,23 @@ else:
 
 router = APIRouter()
 
+USE_JSON_FALLBACK = os.getenv("AI_CHAT_JSON_FALLBACK", "false").lower() == "true"
+JSON_STORE_PATH = os.getenv("AI_CHAT_JSON_PATH", "/tmp/ai_chat_store.json")
+
+def _json_store_load() -> Dict[str, Any]:
+    try:
+        with open(JSON_STORE_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {"conversations": {}, "messages": {}}
+
+def _json_store_save(data: Dict[str, Any]) -> None:
+    try:
+        with open(JSON_STORE_PATH, "w", encoding="utf-8") as f:
+            json.dump(data, f)
+    except Exception:
+        pass
+
 
 @router.post("/chat", response_model=ChatMessageResponse)
 async def send_chat_message(
@@ -77,32 +95,56 @@ async def send_chat_message(
             }
             
             # Use optimized database insert
-            insert_query = """
-            INSERT INTO ai_conversations (user_id, title, message_count, last_message_at)
-            VALUES (%s, %s, %s, %s) RETURNING id
-            """
-            result = await db_manager.execute_query(
-                insert_query,
-                conversation_data["user_id"],
-                conversation_data["title"],
-                conversation_data["message_count"],
-                conversation_data["last_message_at"]
-            )
-            conversation_id = result[0]["id"]
+            try:
+                insert_query = """
+                INSERT INTO ai_conversations (user_id, title, message_count, last_message_at)
+                VALUES (%s, %s, %s, %s) RETURNING id
+                """
+                result = await db_manager.execute_query(
+                    insert_query,
+                    conversation_data["user_id"],
+                    conversation_data["title"],
+                    conversation_data["message_count"],
+                    conversation_data["last_message_at"]
+                )
+                conversation_id = result[0]["id"]
+            except Exception as db_err:
+                if USE_JSON_FALLBACK:
+                    store = _json_store_load()
+                    conversation_id = f"local_{int(time.time()*1000)}"
+                    store["conversations"][conversation_id] = {
+                        **conversation_data,
+                        "id": conversation_id
+                    }
+                    _json_store_save(store)
+                else:
+                    raise
         
         # Save user message with performance tracking
         user_message_query = """
         INSERT INTO ai_messages (conversation_id, role, content, created_at)
         VALUES (%s, %s, %s, %s) RETURNING id
         """
-        user_message_result = await db_manager.execute_query(
-            user_message_query,
-            conversation_id,
-            "user",
-            request.message,
-            datetime.utcnow().isoformat()
-        )
-        user_message_id = user_message_result[0]["id"]
+        try:
+            user_message_result = await db_manager.execute_query(
+                user_message_query,
+                conversation_id,
+                "user",
+                request.message,
+                datetime.utcnow().isoformat()
+            )
+            user_message_id = user_message_result[0]["id"]
+        except Exception:
+            if USE_JSON_FALLBACK:
+                store = _json_store_load()
+                store.setdefault("messages", {}).setdefault(conversation_id, []).append({
+                    "id": f"local_{int(time.time()*1000)}",
+                    "conversation_id": conversation_id,
+                    "role": "user",
+                    "content": request.message,
+                    "created_at": datetime.utcnow().isoformat()
+                })
+                _json_store_save(store)
         
         # Record query performance
         query_time = time.time() - start_time
@@ -174,27 +216,53 @@ async def send_chat_message(
             "tokens_used": len(ai_content.split()) if ai_content else 0
         }
         
-        ai_message_result = await db_manager.execute_query(
-            ai_message_query,
-            conversation_id,
-            "assistant",
-            ai_content,
-            metadata,
-            datetime.utcnow().isoformat()
-        )
-        ai_message_id = ai_message_result[0]["id"]
+        try:
+            ai_message_result = await db_manager.execute_query(
+                ai_message_query,
+                conversation_id,
+                "assistant",
+                ai_content,
+                metadata,
+                datetime.utcnow().isoformat()
+            )
+            ai_message_id = ai_message_result[0]["id"]
+        except Exception:
+            if USE_JSON_FALLBACK:
+                store = _json_store_load()
+                msg_id = f"local_{int(time.time()*1000)}"
+                store.setdefault("messages", {}).setdefault(conversation_id, []).append({
+                    "id": msg_id,
+                    "conversation_id": conversation_id,
+                    "role": "assistant",
+                    "content": ai_content,
+                    "metadata": metadata,
+                    "created_at": datetime.utcnow().isoformat()
+                })
+                _json_store_save(store)
+                ai_message_id = msg_id
+            else:
+                raise
         
         # Update conversation with batch operation
-        update_query = """
-        UPDATE ai_conversations 
-        SET message_count = message_count + 2, last_message_at = %s 
-        WHERE id = %s
-        """
-        await db_manager.execute_query(
-            update_query,
-            datetime.utcnow().isoformat(),
-            conversation_id
-        )
+        try:
+            update_query = """
+            UPDATE ai_conversations 
+            SET message_count = message_count + 2, last_message_at = %s 
+            WHERE id = %s
+            """
+            await db_manager.execute_query(
+                update_query,
+                datetime.utcnow().isoformat(),
+                conversation_id
+            )
+        except Exception:
+            if USE_JSON_FALLBACK:
+                store = _json_store_load()
+                if conversation_id in store.get("conversations", {}):
+                    conv = store["conversations"][conversation_id]
+                    conv["message_count"] = int(conv.get("message_count", 0)) + 2
+                    conv["last_message_at"] = datetime.utcnow().isoformat()
+                    _json_store_save(store)
         
         # Record performance metrics
         total_time = time.time() - start_time

@@ -13,6 +13,7 @@ from supabase import create_client, Client
 from supabase.client import ClientOptions
 import asyncpg
 from asyncpg import Pool
+import ssl
 
 logger = structlog.get_logger()
 
@@ -112,6 +113,7 @@ class DatabaseManager:
                     max_queries=50000,
                     max_inactive_connection_lifetime=300.0,
                     command_timeout=60.0,
+                    ssl=True,
                     server_settings={
                         'application_name': 'k-orbit-backend',
                         'jit': 'off'  # Disable JIT for faster simple queries
