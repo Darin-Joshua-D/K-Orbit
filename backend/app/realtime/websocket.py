@@ -161,18 +161,15 @@ manager = ConnectionManager()
 async def verify_websocket_token(token: str) -> dict:
     """Verify WebSocket authentication token."""
     try:
-        # Verify token with Supabase
+        # Verify token with Supabase (simplified to avoid DB pool issues)
         response = supabase.auth.get_user(token)
         if response.user:
-            # Get user profile
-            profile_response = supabase.table("profiles").select("*").eq("id", response.user.id).single().execute()
-            
             user_data = {
                 "sub": response.user.id,
                 "email": response.user.email,
-                "role": profile_response.data.get("role") if profile_response.data else "learner",
-                "org_id": profile_response.data.get("org_id") if profile_response.data else None,
-                "full_name": profile_response.data.get("full_name") if profile_response.data else None,
+                "role": "learner",  # Simplified - avoid DB query for now
+                "org_id": None,
+                "full_name": response.user.email,
             }
             
             return user_data
