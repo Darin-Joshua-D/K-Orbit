@@ -3,9 +3,11 @@
 import React from "react";
 import Link from "next/link";
 import { useAuth, useRole } from "@/lib/auth/auth-provider";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
 
 export default function ManagerDashboardPage() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { role } = useRole();
 
   const hasAccess = role === "manager" || role === "admin" || role === "super_admin";
@@ -37,8 +39,16 @@ export default function ManagerDashboardPage() {
     <div className="min-h-screen p-6">
       <div className="max-w-5xl mx-auto space-y-6">
         <header className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight">Manager Dashboard</h1>
-          <p className="text-muted-foreground">Welcome{user?.email ? `, ${user.email}` : ""}. This is a minimal manager view. We can expand this with reports, team progress, approvals, etc.</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">Manager Dashboard</h1>
+              <p className="text-muted-foreground">Welcome{user?.email ? `, ${user.email}` : ""}. This is a minimal manager view. We can expand this with reports, team progress, approvals, etc.</p>
+            </div>
+            <Button variant="outline" onClick={signOut} className="gap-2">
+              <LogOut className="h-4 w-4" />
+              Logout
+            </Button>
+          </div>
         </header>
 
         <div className="rounded-lg border bg-card p-6">
