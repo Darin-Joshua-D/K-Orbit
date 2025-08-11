@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Loader2, Sparkles, FileText, Brain, AlertCircle } from 'lucide-react';
+import { Send, Bot, User, Loader2, Sparkles, FileText, Brain, AlertCircle, Paperclip } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-provider';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
@@ -39,6 +39,8 @@ export function AIChat({ className, isMinimized = false, onToggleMinimize }: AIC
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch conversation messages
   const { data: messages = [], isLoading: isLoadingMessages, error: messagesError } = useQuery({
@@ -95,6 +97,9 @@ export function AIChat({ className, isMinimized = false, onToggleMinimize }: AIC
       // Invalidate and refetch messages
       queryClient.invalidateQueries({ queryKey: ['chat-messages', data.conversation_id] });
       setMessage('');
+      // Keep attachments UI-only; clear selection after send
+      setAttachedFiles([]);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     },
     onError: (error: Error) => {
       console.error('Failed to send message:', error);
@@ -122,6 +127,16 @@ export function AIChat({ className, isMinimized = false, onToggleMinimize }: AIC
       e.preventDefault();
       handleSendMessage();
     }
+  };
+
+  // Dummy file upload UI handlers (no network calls)
+  const handleFileButtonClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setAttachedFiles(files);
   };
 
   // Auto-scroll to bottom when new messages arrive
@@ -367,6 +382,25 @@ export function AIChat({ className, isMinimized = false, onToggleMinimize }: AIC
               disabled={sendMessageMutation.isPending}
             />
           </div>
+          {/* Dummy file upload button (UI only) */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            className="hidden"
+            onChange={handleFilesSelected}
+            aria-label="Attach files"
+          />
+          <button
+            type="button"
+            onClick={handleFileButtonClick}
+            className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            title="Attach files (UI only)"
+            aria-label="Attach files"
+            disabled={sendMessageMutation.isPending}
+          >
+            <Paperclip className="h-4 w-4" />
+          </button>
           <button
             onClick={handleSendMessage}
             disabled={!message.trim() || sendMessageMutation.isPending}
@@ -375,6 +409,16 @@ export function AIChat({ className, isMinimized = false, onToggleMinimize }: AIC
             <Send className="h-4 w-4" />
           </button>
         </div>
+        {attachedFiles.length > 0 && (
+          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+            <span className="inline-flex items-center gap-1">
+              <Paperclip className="h-3 w-3" /> {attachedFiles.length} file{attachedFiles.length > 1 ? 's' : ''} selected
+            </span>
+            <span className="truncate">
+              {attachedFiles.slice(0, 3).map(f => f.name).join(', ')}{attachedFiles.length > 3 ? '…' : ''}
+            </span>
+          </div>
+        )}
         
         <p className="text-xs text-gray-400 mt-2 text-center">
           Press Enter to send, Shift+Enter for new line

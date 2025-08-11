@@ -31,6 +31,22 @@ export default function ManagerDashboardPage() {
   const [announceSending, setAnnounceSending] = useState(false);
   const [reportees, setReportees] = useState<{ users: any[]; total: number } | null>(null);
 
+  // Dummy prototype data (UI only)
+  const dummyMetrics = { totalUsers: 7, activeLearners: 7, engagementPct: 80 };
+  const dummyTopPerformers: Array<{ id: string; full_name: string }> = [
+    { id: "dj", full_name: "DJ" },
+  ];
+  const dummyTeamNames = [
+    "DJ",
+    "Mahendar",
+    "Vivek",
+    "Nayana",
+    "Shoaib",
+    "Harshitha",
+    "Ashish",
+  ];
+  const dummyLearningBars = [8, 12, 6, 14, 10, 16, 9, 13, 11, 15, 7, 18];
+
   useEffect(() => {
     const fetchInsights = async () => {
       if (!hasAccess) return;
@@ -40,7 +56,11 @@ export default function ManagerDashboardPage() {
         if (res.ok) {
           const data = await res.json();
           setInsights(data);
+        } else {
+          setInsights(null);
         }
+      } catch {
+        setInsights(null);
       } finally {
         setLoading(false);
       }
@@ -54,15 +74,19 @@ export default function ManagerDashboardPage() {
       try {
         const res = await fetch('/api/users/reportees');
         if (res.ok) setReportees(await res.json());
-      } catch {}
+        else setReportees(null);
+      } catch {
+        setReportees(null);
+      }
     };
     fetchReportees();
   }, [hasAccess]);
 
   const engagementPct = useMemo(() => {
-    if (!insights) return 0;
-    return Math.round((insights.overview.engagement_rate || 0) * 100);
-  }, [insights]);
+    if (insights) return Math.round((insights.overview.engagement_rate || 0) * 100);
+    if (!loading) return dummyMetrics.engagementPct;
+    return 0;
+  }, [insights, loading]);
 
   if (!user) {
     return (
@@ -104,6 +128,17 @@ export default function ManagerDashboardPage() {
     }
   };
 
+  // Decide whether to show dummy or API values
+  const totalUsersDisplay = insights?.overview.total_users ?? (!loading ? dummyMetrics.totalUsers : '…');
+  const activeLearnersDisplay = insights?.overview.active_learners ?? (!loading ? dummyMetrics.activeLearners : '…');
+
+  const usingDummyTopPerformers = !loading && (!insights || !insights.top_performers || insights.top_performers.length === 0);
+  const topPerformersDisplay = usingDummyTopPerformers ? dummyTopPerformers : (insights?.top_performers || []);
+
+  const usingDummyTeam = !reportees || !reportees.users || reportees.users.length === 0;
+  const teamCountLabel = usingDummyTeam ? `${dummyTeamNames.length} members` : `${reportees?.total ?? 0} members`;
+  const teamList = usingDummyTeam ? dummyTeamNames : reportees!.users.map((u: any) => u.full_name);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
@@ -124,15 +159,38 @@ export default function ManagerDashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="glass-card p-6">
             <p className="text-sm text-muted-foreground">Total users</p>
-            <p className="text-2xl font-semibold">{insights?.overview.total_users ?? (loading ? '…' : 0)}</p>
+            <p className="text-2xl font-semibold">{totalUsersDisplay}</p>
           </div>
           <div className="glass-card p-6">
             <p className="text-sm text-muted-foreground">Active learners ({period})</p>
-            <p className="text-2xl font-semibold">{insights?.overview.active_learners ?? (loading ? '…' : 0)}</p>
+            <p className="text-2xl font-semibold">{activeLearnersDisplay}</p>
           </div>
           <div className="glass-card p-6">
             <p className="text-sm text-muted-foreground">Engagement</p>
             <p className="text-2xl font-semibold">{loading ? '…' : `${engagementPct}%`}</p>
+          </div>
+        </div>
+
+        {/* Colored graph of learnings (dummy UI) */}
+        <div className="glass p-6 rounded-xl">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-semibold flex items-center gap-2"><BarChart3 className="h-4 w-4" /> Learnings</h2>
+            <span className="text-sm text-gray-500">Last 30 days</span>
+          </div>
+          <div className="h-32 flex items-end gap-2">
+            {(insights ? insights.course_performance?.slice(0, 12).map((_: any, i: number) => i + 8) : dummyLearningBars).map((v: number, idx: number) => (
+              <div
+                key={idx}
+                className="flex-1 rounded-t-md"
+                style={{
+                  height: `${Math.max(6, Math.min(18, v)) * 6}px`,
+                  background: `linear-gradient(180deg, rgba(59,130,246,0.9), rgba(99,102,241,0.8))`,
+                  boxShadow: '0 2px 8px rgba(59,130,246,0.25)'
+                }}
+                aria-label={`Day ${idx + 1} value ${v}`}
+                title={`Day ${idx + 1}: ${v}`}
+              />
+            ))}
           </div>
         </div>
 
@@ -150,12 +208,12 @@ export default function ManagerDashboardPage() {
             <p className="text-sm text-muted-foreground">Loading…</p>
           ) : (
             <ul className="space-y-2">
-              {(insights?.top_performers || []).slice(0, 10).map(tp => (
+              {topPerformersDisplay.map(tp => (
                 <li key={tp.id} className="flex items-center justify-between">
                   <span>{tp.full_name}</span>
                 </li>
               ))}
-              {(!insights?.top_performers || insights.top_performers.length === 0) && (
+              {topPerformersDisplay.length === 0 && (
                 <p className="text-sm text-muted-foreground">No data</p>
               )}
             </ul>
@@ -166,22 +224,36 @@ export default function ManagerDashboardPage() {
         <div className="glass p-6 rounded-xl">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-semibold flex items-center gap-2"><Users className="h-4 w-4" /> Your team</h2>
-            <span className="text-sm text-gray-500">{reportees?.total ?? 0} members</span>
+            <span className="text-sm text-gray-500">{teamCountLabel}</span>
           </div>
-          {reportees?.users?.length ? (
+          {usingDummyTeam ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {reportees.users.slice(0, 6).map((u: any) => (
-                <div key={u.id} className="flex items-center justify-between p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg">
+              {dummyTeamNames.map((name) => (
+                <div key={name} className="flex items-center justify-between p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg">
                   <div>
-                    <p className="font-medium">{u.full_name}</p>
-                    <p className="text-xs text-gray-500">{u.email}</p>
+                    <p className="font-medium">{name}</p>
+                    <p className="text-xs text-gray-500">example@company.com</p>
                   </div>
-                  <span className="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700">{u.role}</span>
+                  <span className="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700">member</span>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">No team members found</p>
+            reportees?.users?.length ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {reportees.users.slice(0, 6).map((u: any) => (
+                  <div key={u.id} className="flex items-center justify-between p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg">
+                    <div>
+                      <p className="font-medium">{u.full_name}</p>
+                      <p className="text-xs text-gray-500">{u.email}</p>
+                    </div>
+                    <span className="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700">{u.role}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">No team members found</p>
+            )
           )}
         </div>
 
