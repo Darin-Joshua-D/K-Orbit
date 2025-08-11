@@ -114,9 +114,9 @@ async def get_current_user_id(request: Request) -> str:
     return user["sub"]
 
 
-async def require_role(required_roles: list[str]):
+def require_role(required_roles: list[str]):
     """Dependency factory to require specific roles."""
-    def role_checker(request: Request) -> dict:
+    async def role_checker(request: Request) -> dict:
         user = request.state.user
         if not user or user.get("role") not in required_roles:
             raise HTTPException(

@@ -16,6 +16,7 @@ import uuid
 
 from app.auth.middleware import get_current_user
 from app.database import get_db_manager, get_query_cache, get_db_metrics
+from app.database.supabase_client import supabase, supabase_admin
 from app.ai_agent.models import (
     ChatMessageRequest,
     ChatMessageResponse,
@@ -71,6 +72,31 @@ def _generate_uuid() -> str:
     return str(uuid.uuid4())
 
 
+def _ensure_user_profile_exists(user: dict) -> None:
+    """Ensure a profiles row exists to satisfy FK constraints for conversations/messages.
+    Best-effort; swallows errors to not block chat flow.
+    """
+    try:
+        profile = supabase.table("profiles").select("id").eq("id", user["sub"]).single().execute()
+        if not getattr(profile, "data", None):
+            now_iso = datetime.utcnow().isoformat()
+            profile_data = {
+                "id": user["sub"],
+                "email": user.get("email"),
+                "full_name": user.get("full_name") or user.get("name") or "User",
+                "role": user.get("role") or "learner",
+                "org_id": user.get("org_id"),
+                "created_at": now_iso,
+                "last_active": now_iso,
+                "onboarding_completed": False,
+            }
+            # Use admin client to bypass RLS if necessary
+            supabase_admin.table("profiles").insert(profile_data).execute()
+    except Exception as e:
+        # Log and continue; fallback will handle if inserts still fail
+        logger.warning("ensure_profile_exists_failed", error=str(e), user_id=user.get("sub"))
+
+
 @router.post("/chat", response_model=ChatMessageResponse)
 async def send_chat_message(
     request: ChatMessageRequest,
@@ -91,6 +117,8 @@ async def send_chat_message(
         if request.conversation_id:
             conversation_id = request.conversation_id
         else:
+            # Ensure profile exists to avoid FK violation
+            _ensure_user_profile_exists(user)
             # Create new conversation using optimized database
             conversation_data = {
                 "user_id": user["sub"],
@@ -114,6 +142,7 @@ async def send_chat_message(
                 )
                 conversation_id = result[0]["id"]
             except Exception as db_err:
+                # Fallback to JSON if DB insert fails (e.g., FK constraint when profile missing)
                 if USE_JSON_FALLBACK:
                     store = _json_store_load()
                     conversation_id = _generate_uuid()
@@ -124,13 +153,18 @@ async def send_chat_message(
                     _json_store_save(store)
                     logger.info("Created conversation in JSON fallback", conversation_id=conversation_id)
                 else:
+                    # If no fallback is allowed, propagate error
                     raise
+        
+        if not conversation_id:
+            raise HTTPException(status_code=500, detail="Failed to initialize conversation")
         
         # Save user message with performance tracking
         user_message_query = """
         INSERT INTO ai_messages (conversation_id, role, content, created_at)
         VALUES (%s, %s, %s, %s) RETURNING id
         """
+        user_message_persisted = False
         try:
             user_message_result = await db_manager.execute_query(
                 user_message_query,
@@ -140,6 +174,7 @@ async def send_chat_message(
                 datetime.utcnow().isoformat()
             )
             user_message_id = user_message_result[0]["id"]
+            user_message_persisted = True
         except Exception:
             if USE_JSON_FALLBACK:
                 store = _json_store_load()
@@ -156,14 +191,15 @@ async def send_chat_message(
             else:
                 raise
         
-        # Record query performance
+        # Record query performance only if DB path was used
         query_time = time.time() - start_time
-        await metrics.record_query(
-            user_message_query,
-            query_time,
-            True,
-            affected_rows=1
-        )
+        if user_message_persisted:
+            await metrics.record_query(
+                user_message_query,
+                query_time,
+                True,
+                affected_rows=1
+            )
         
         # Get relevant knowledge context with caching
         knowledge_context = await _get_knowledge_context_cached(
@@ -174,24 +210,33 @@ async def send_chat_message(
         system_prompt = _build_system_prompt(user, knowledge_context)
         
         # Get conversation history with optimized query
-        history_query = """
-        SELECT role, content FROM ai_messages 
-        WHERE conversation_id = %s 
-        ORDER BY created_at 
-        LIMIT 10
-        """
-        history_result = await db_manager.execute_query(history_query, conversation_id)
-        
         messages = [{"role": "system", "content": system_prompt}]
+        history_result: List[Dict[str, Any]] = []
+        try:
+            history_query = """
+            SELECT role, content FROM ai_messages 
+            WHERE conversation_id = %s 
+            ORDER BY created_at 
+            LIMIT 10
+            """
+            history_result = await db_manager.execute_query(history_query, conversation_id)
+        except Exception:
+            if USE_JSON_FALLBACK:
+                store = _json_store_load()
+                history_result = store.get("messages", {}).get(conversation_id, [])[-10:]
+            else:
+                history_result = []
         
         # Add conversation history
-        for msg in history_result[:-1]:  # Exclude the just-added user message
-            messages.append({
-                "role": msg["role"],
-                "content": msg["content"]
-            })
+        # If the user message was persisted to DB, exclude the most recent (just-added) to avoid duplicates.
+        iterable = history_result[:-1] if user_message_persisted and history_result else history_result
+        for msg in iterable:
+            role = msg.get("role") if isinstance(msg, dict) else msg["role"]
+            content = msg.get("content") if isinstance(msg, dict) else msg["content"]
+            if role and content:
+                messages.append({"role": role, "content": content})
         
-        # Add current user message
+        # Add current user message (ensures it is present even if history fetch missed it)
         messages.append({"role": "user", "content": request.message})
         
         # Call Google Gemini API or fallback
@@ -211,21 +256,18 @@ async def send_chat_message(
             ai_content = "(AI unavailable) " + request.message[::-1]
             metadata = {"fallback": True}
         
-        # Ensure metadata exists
-        
         # Save AI response with optimized batch operation
         ai_message_query = """
         INSERT INTO ai_messages (conversation_id, role, content, metadata, created_at)
         VALUES (%s, %s, %s, %s, %s) RETURNING id
         """
-        
         metadata = {
             "model": "gemini-2.5-flash",
-            "sources": [ctx["title"] for ctx in knowledge_context[:3]],
+            "sources": [ctx["title"] for ctx in knowledge_context[:3]] if knowledge_context else [],
             "processing_time_ms": int((time.time() - start_time) * 1000),
             "tokens_used": len(ai_content.split()) if ai_content else 0
         }
-        
+        ai_message_persisted = False
         try:
             ai_message_result = await db_manager.execute_query(
                 ai_message_query,
@@ -236,6 +278,7 @@ async def send_chat_message(
                 datetime.utcnow().isoformat()
             )
             ai_message_id = ai_message_result[0]["id"]
+            ai_message_persisted = True
         except Exception:
             if USE_JSON_FALLBACK:
                 store = _json_store_load()
@@ -253,7 +296,7 @@ async def send_chat_message(
             else:
                 raise
         
-        # Update conversation with batch operation
+        # Update conversation with batch operation (best-effort)
         try:
             update_query = """
             UPDATE ai_conversations 
@@ -273,17 +316,18 @@ async def send_chat_message(
                     conv["message_count"] = int(conv.get("message_count", 0)) + 2
                     conv["last_message_at"] = datetime.utcnow().isoformat()
                     _json_store_save(store)
-            # Note: UPDATE queries may fail with RPC fallback, but this is non-critical
-            # since the conversation and messages are already saved successfully
         
         # Record performance metrics
         total_time = time.time() - start_time
-        await metrics.record_query(
-            "ai_chat_complete",
-            total_time,
-            True,
-            affected_rows=3
-        )
+        try:
+            await metrics.record_query(
+                "ai_chat_complete",
+                total_time,
+                True,
+                affected_rows=3
+            )
+        except Exception:
+            pass
         
         logger.info(
             "AI chat message processed",
@@ -303,12 +347,11 @@ async def send_chat_message(
         
     except Exception as e:
         logger.error("AI chat failed", error=str(e), user_id=(user.get("sub") or user.get("id")))
-        
         # Safe error recording without crashing
         try:
             await metrics.record_query("ai_chat_error", time.time() - start_time, False, str(e))
-        except Exception as metrics_error:
-            logger.error("Failed to record metrics", error=str(metrics_error))
+        except Exception:
+            pass
         raise HTTPException(status_code=500, detail="AI service temporarily unavailable")
 
 
@@ -331,7 +374,7 @@ async def get_conversations(
         """
         result = await db_manager.execute_query(conversations_query, user["sub"], limit)
         
-        conversations = []
+        conversations: List[ConversationResponse] = []
         for conv in result:
             conversations.append(ConversationResponse(
                 id=conv["id"],
@@ -341,6 +384,35 @@ async def get_conversations(
                 last_message_at=datetime.fromisoformat(conv["last_message_at"]),
                 created_at=datetime.fromisoformat(conv["created_at"])
             ))
+        
+        # If DB had fewer than limit and fallback is enabled, include JSON store conversations
+        if USE_JSON_FALLBACK and len(conversations) < limit:
+            store = _json_store_load()
+            user_convs = [
+                c for c in store.get("conversations", {}).values()
+                if c.get("user_id") == user["sub"]
+            ]
+            # Sort by last_message_at desc
+            user_convs.sort(key=lambda c: c.get("last_message_at", ""), reverse=True)
+            # Merge while avoiding duplicates
+            existing_ids = {c.id for c in conversations}
+            for c in user_convs:
+                if c.get("id") in existing_ids:
+                    continue
+                try:
+                    conversations.append(ConversationResponse(
+                        id=c["id"],
+                        title=c.get("title", "Untitled"),
+                        summary=c.get("summary"),
+                        message_count=int(c.get("message_count", 0)),
+                        last_message_at=datetime.fromisoformat(c.get("last_message_at") or datetime.utcnow().isoformat()),
+                        created_at=datetime.fromisoformat(c.get("created_at") or c.get("last_message_at") or datetime.utcnow().isoformat())
+                    ))
+                except Exception:
+                    # Skip malformed entries
+                    continue
+                if len(conversations) >= limit:
+                    break
         
         return conversations
         
@@ -367,10 +439,34 @@ async def get_conversation_messages(
         SELECT id, user_id FROM ai_conversations WHERE id = %s AND user_id = %s
         """, conversation_id, user["sub"])
         
-        if not conv_response:
-            raise HTTPException(status_code=404, detail="Conversation not found")
+        messages: List[ChatMessageResponse] = []
         
-        # Get messages
+        if not conv_response:
+            if USE_JSON_FALLBACK:
+                # Check JSON store as fallback
+                store = _json_store_load()
+                conv = store.get("conversations", {}).get(conversation_id)
+                if not conv or conv.get("user_id") != user["sub"]:
+                    raise HTTPException(status_code=404, detail="Conversation not found")
+                # Get messages from JSON
+                json_msgs = store.get("messages", {}).get(conversation_id, [])
+                for msg in json_msgs:
+                    try:
+                        messages.append(ChatMessageResponse(
+                            id=msg["id"],
+                            conversation_id=msg.get("conversation_id", conversation_id),
+                            role=msg["role"],
+                            content=msg["content"],
+                            metadata=msg.get("metadata"),
+                            created_at=datetime.fromisoformat(msg["created_at"]) if isinstance(msg.get("created_at"), str) else datetime.utcnow()
+                        ))
+                    except Exception:
+                        continue
+                return messages
+            else:
+                raise HTTPException(status_code=404, detail="Conversation not found")
+        
+        # Get messages from DB
         messages_query = """
         SELECT id, conversation_id, role, content, metadata, created_at
         FROM ai_messages
@@ -379,7 +475,6 @@ async def get_conversation_messages(
         """
         result = await db_manager.execute_query(messages_query, conversation_id)
         
-        messages = []
         for msg in result:
             messages.append(ChatMessageResponse(
                 id=msg["id"],
