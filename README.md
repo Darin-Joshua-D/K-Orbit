@@ -36,7 +36,7 @@ K-Orbit is built with a modern, scalable, and secure technology stack, designed 
 | **Database** | **Supabase (PostgreSQL with pgvector)** | Handles authentication, storage, real-time events, and vector similarity search. |
 | **AI Engine** | **Google Gemini & Gemini Embeddings** | Powers the conversational AI coach and semantic search capabilities via direct Google APIs. |
 | **Real-time**| **WebSockets**| Enables live notifications, progress tracking, and announcements. |
-| **Deployment** | **Docker, Vercel, Render** | Containerized for local development and ready for production deployment on modern cloud platforms. |
+| **Deployment** | **Docker, Render, Azure App Service** | Containerized for local development and ready for production deployment on modern cloud platforms. |
 
 ### Simple V1 Design
 
@@ -121,7 +121,7 @@ Copy the example environment file and fill in your credentials.
 cp env.example .env
 nano .env
 ```
-You will need to add your API keys from Supabase and Google AI Studio.
+You will need to add your API keys from Supabase and Google AI Studio. Also review `env.example` for all required variables (frontend, backend, Supabase, AI, and deployment) to ensure your environment is complete before running or deploying.
 
 ### 3. Set Up the Database
 Log in to your Supabase account and perform the following steps:
@@ -214,7 +214,7 @@ We welcome contributions! Please see our contributing guide for more details on 
 - **AI**: Google Gemini for conversational AI; Gemini Embeddings for semantic search across documents.
 - **Real-time**: WebSockets to power live notifications and updates (e.g., announcements, progress).
 - **State & Data**: React Query for server state caching/retries; Zustand for lightweight client state.
-- **DevOps & Deployment**: Docker and docker-compose for local orchestration; Vercel (frontend) and Render/Railway/etc. (backend) for deployment; GitHub Actions (optional) for CI/CD.
+- **DevOps & Deployment**: Docker and docker-compose for local orchestration; Render/Azure App Service, etc. (frontend and backend) for deployment; GitHub Actions (optional) for CI/CD.
 - **Observability**: Structured logging with `structlog`; compatible with Sentry/GA if desired.
 
 ## 🔮 Future Enhancements
