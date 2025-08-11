@@ -2,9 +2,9 @@
 
 **Transform your organization's learning culture with K-Orbit—an intelligent, enterprise-ready platform designed for modern teams.**
 
-K-Orbit is a comprehensive onboarding, learning and knowledge management system powered by AI. It combines a rich, interactive learning environment with a powerful, semantic knowledge base to create a seamless and engaging experience for employees. From personalized onboarding paths to an AI-powered coach that answers questions in real-time, K-Orbit is built to foster growth, collaboration, and efficiency for new hires, project hires and more.
+K-Orbit is a modern comprehensive onboarding, learning and knowledge management system powered by AI. It combines a rich, interactive learning environment with a powerful, semantic knowledge base to create a seamless and engaging experience for employees. From personalized onboarding paths to an AI-powered coach that answers questions in real-time, K-Orbit is built to foster growth, collaboration, and efficiency for new hires, project hires and more.
 
-**This project is production-ready, fully implemented, and optimized for team development with modern AI tools like Cursor and GitHub Copilot.**
+**This project is production-ready, fully implemented, and optimized for team development with modern AI tools like primarly Cursor and also GitHub Copilot.**
 
 ## ✨ Core Features
 
