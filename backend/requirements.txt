@@ -2,6 +2,7 @@
 # FastAPI Core (Essential)
 fastapi>=0.109.0  # Latest stable version compatible with Python 3.13
 uvicorn>=0.27.0  # Latest stable version
+gunicorn>=20.1.0  # WSGI server for production
 python-multipart>=0.0.9
 pydantic>=2.6.0  # Latest stable version compatible with Python 3.13
 python-dotenv>=1.0.0  # Latest stable version
