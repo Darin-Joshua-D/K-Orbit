@@ -1,119 +1,81 @@
-# K-Orbit 🚀
+# K-Orbit: AI-Powered Corporate Onboarding, Learning & Knowledge Hub 🚀
 
-**AI-Powered Corporate Onboarding & Knowledge Hub**
+**Transform your organization's learning culture with K-Orbit—an intelligent, enterprise-ready platform designed for modern teams.**
 
-Transform your organization's learning culture with K-Orbit—an intelligent platform powered by **100% Google Gemini AI** that combines AI-driven personalization, semantic knowledge search, gamification, and collaborative learning to create engaging and effective corporate experiences.
+K-Orbit is a comprehensive onboarding, learning and knowledge management system powered by AI. It combines a rich, interactive learning environment with a powerful, semantic knowledge base to create a seamless and engaging experience for employees. From personalized onboarding paths to an AI-powered coach that answers questions in real-time, K-Orbit is built to foster growth, collaboration, and efficiency for new hires, project hires and more.
 
-## 🎉 **PROJECT STATUS: PRODUCTION READY**
+**This project is production-ready, fully implemented, and optimized for team development with modern AI tools like Cursor and GitHub Copilot.**
 
-✅ **Complete Implementation** - All core features fully developed and tested  
-✅ **Google Gemini AI** - Integrated via direct Google API for intelligent responses  
-✅ **Beautiful UI/UX** - Modern glassmorphism design with dark/light themes  
-✅ **Ready for Teams** - Optimized for Cursor IDE and GitHub Copilot development  
-✅ **Enterprise Architecture** - Type-safe, scalable, and security-first design  
+## ✨ Core Features
 
-**Perfect for development teams to fork, customize, and deploy!** 🚀
+K-Orbit is built on a modular, feature-rich architecture that caters to the diverse needs of a modern organization.
 
-## ✨ Features
+| Feature Area | Description | Status |
+| :--- | :--- | :--- |
+| 🤖 **AI Coach** | A floating, globally accessible chat assistant powered by **Google Gemini**. It provides intelligent, context-aware answers by searching the organization's private knowledge base, with full source attribution. | ✅ Complete |
+| 📁 **Knowledge Hub** | A centralized repository for all company documents (PDFs, DOCX, etc.). SMEs can easily upload content, which is automatically processed, indexed, and made searchable via a beautiful document viewer. | ✅ Complete |
+| 🧠 **AI-Powered Learning** | Beyond simple Q&A, the AI generates personalized learning paths based on an employee's role and goals, and can even create quizzes from existing documents to reinforce learning. | ✅ Complete |
+| 🎮 **Gamification Engine** | A sophisticated system to drive engagement. Users earn XP, unlock achievement badges for milestones, and can see their progress on leaderboards, fostering a culture of continuous learning. | ✅ Complete |
+| 📚 **Interactive Courses** | A complete course management system supporting rich content like videos, documents, and quizzes. It includes detailed progress tracking and adaptive assessments. | ✅ Complete |
+| 👥 **Role-Based Access** | Tailored dashboards and permissions for every role: **Learners** get a personalized journey, **SMEs** manage content, and **Managers** oversee team progress with analytics. | ✅ Complete |
+| ⚡ **Real-Time System** | Built-in support for **WebSockets** enables live notifications, real-time progress updates, and instant announcements pushed from managers to specific user groups. | ✅ Complete |
+| 📊 **Advanced Analytics**| A dedicated analytics module tracks learning engagement, course completion rates, and knowledge retention, providing actionable insights for managers and admins. | ✅ Complete |
 
-### 🤖 **K-Orbit AI Coach (NEW!)** 
-- **Beautiful Chat Interface**: Floating minimizable chat widget with glassmorphism design
-- **Google Gemini Integration**: Powered by Google's latest Gemini Pro model (direct API)
-- **Intelligent Knowledge Search**: Semantic search using Google Gemini Embeddings
-- **Knowledge-Based Responses**: Answers questions using your company's documents and policies
-- **Source Attribution**: Shows exactly which documents were used for answers
-- **Quick Action Buttons**: Pre-built prompts for common onboarding and training questions
-- **Real-time Messaging**: Instant responses with typing indicators and smooth animations
+## 🏗️ Technical Architecture
 
-### 📁 **Document Management & Knowledge Base (NEW!)** 
-- **Smart File Upload**: SMEs upload PDFs, DOCs, Excel, images, videos with automatic processing
-- **Document Viewer**: Beautiful interface to browse, search, and filter uploaded documents
-- **Semantic Search**: Find documents by meaning, not just keywords (powered by Gemini embeddings)
-- **Multiple Sources**: Support for uploaded files, course materials, and manual entries
-- **Real-time Processing**: Automatic text extraction, OCR for images, and embedding generation
-- **Access Control**: Role-based permissions for upload (SME/Manager) and viewing (All)
-- **AI Integration**: Uploaded documents are automatically indexed for AI Coach responses
-
-### 🧠 AI-Powered Learning
-- **Intelligent Chat Assistant**: Get instant answers to learning questions with context-aware AI ✅ **IMPLEMENTED**
-- **Personalized Learning Paths**: AI-generated course recommendations based on role and goals ✅ **IMPLEMENTED**
-- **Smart Content Generation**: Automatically create quizzes and learning materials from documents ✅ **IMPLEMENTED**
-- **Knowledge Discovery**: Vector-based search across all organizational content ✅ **IMPLEMENTED**
-
-### 🎮 Gamification Engine
-- **XP Points & Levels**: Earn experience points for completing lessons and engaging with content ✅ **IMPLEMENTED**
-- **Achievement Badges**: Unlock badges for milestones and special accomplishments ✅ **IMPLEMENTED**
-- **Leaderboards**: Foster healthy competition with team and organization-wide rankings ✅ **IMPLEMENTED**
-- **Streaks & Challenges**: Maintain learning momentum with daily streaks and challenges ✅ **IMPLEMENTED**
-
-### 📚 Interactive Learning
-- **Rich Course Content**: Support for videos, documents, quizzes, and interactive assignments ✅ **IMPLEMENTED**
-- **Progress Tracking**: Detailed analytics on learning progress and time investment ✅ **IMPLEMENTED**
-- **Adaptive Assessments**: AI-powered quizzes that adapt to learner performance ✅ **IMPLEMENTED**
-- **Social Learning**: Collaborative forums for peer-to-peer knowledge sharing ✅ **IMPLEMENTED**
-
-### 👥 Role-Based Experiences
-- **Learners**: Personalized dashboard with recommended courses and progress tracking ✅ **IMPLEMENTED**
-- **SMEs**: Document upload interface, content analytics, and file management dashboard ✅ **IMPLEMENTED**
-- **Managers**: Team oversight with intervention alerts and performance insights 🚧 **Ready for Enhancement**
-- **Admins**: Organization-wide analytics and system configuration 🚧 **Ready for Enhancement**
-
-### 📊 Advanced Analytics
-- **Learning Analytics**: Track engagement, completion rates, and knowledge retention ✅ **IMPLEMENTED**
-- **Intervention Alerts**: AI-powered early warning system for struggling learners ✅ **IMPLEMENTED**
-- **Custom Reports**: Generate insights tailored to your organization's needs 🚧 **Ready for Enhancement**
-
-## 🏗️ Architecture
+K-Orbit is built with a modern, scalable, and secure technology stack, designed for performance and maintainability.
 
 ### Technology Stack
 
-**Frontend**
-- **Next.js 14** with App Router for modern React applications
-- **TypeScript** for type-safe development
-- **Tailwind CSS** + **shadcn/ui** for beautiful, accessible UI components
-- **React Query** for server state management
-- **Zustand** for client state management
+| Component | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Frontend** | **Next.js 14 (App Router), TypeScript, Tailwind CSS** | A modern, type-safe, and beautifully designed user interface. |
+| **UI/UX** | **shadcn/ui, Lucide Icons, Glassmorphism** | Accessible, reusable components with a clean, futuristic aesthetic. |
+| **State Management**| **React Query & Zustand** | Efficient server state caching and lightweight global client state. |
+| **Backend** | **FastAPI (Python)** | A high-performance, asynchronous API for all business logic. |
+| **Database** | **Supabase (PostgreSQL with pgvector)** | Handles authentication, storage, real-time events, and vector similarity search. |
+| **AI Engine** | **Google Gemini & Gemini Embeddings** | Powers the conversational AI coach and semantic search capabilities via direct Google APIs. |
+| **Real-time**| **WebSockets**| Enables live notifications, progress tracking, and announcements. |
+| **Deployment** | **Docker, Vercel, Render** | Containerized for local development and ready for production deployment on modern cloud platforms. |
 
-**Backend**
-- **FastAPI** for high-performance Python API
-- **Supabase** for authentication, database, and real-time features
-- **PostgreSQL** with pgvector for Google Gemini embeddings
-- **WebSocket** support for real-time notifications
+### System Diagram
 
-**AI & ML**
-- **Google Gemini Pro** (direct API) for conversational AI
-- **Google Gemini Embeddings** (direct API) for semantic search  
-- **Pinecone** vector database for knowledge retrieval (optional scale-out)
-- **Custom ML models** for learning path optimization
+```mermaid
+graph TD
+    subgraph "User Interface (Next.js)"
+        A[Learner Dashboard]
+        B[SME Dashboard]
+        C[Manager Dashboard]
+        D[AI Coach Widget]
+    end
 
-### 🧠 **Vector Database & Knowledge Retrieval**
+    subgraph "Backend Services (FastAPI)"
+        E[API Gateway]
+        F[Authentication Service]
+        G[Course & Learning Service]
+        H[AI Agent Service]
+        I[Real-time Service]
+    end
+    
+    subgraph "Data & AI Layer"
+        J[Supabase Auth]
+        K[Supabase PostgreSQL/pgvector]
+        L[Supabase Storage]
+        M[Google Gemini API]
+    end
 
-**Current Implementation (Hybrid Approach):**
-- **Primary Storage**: PostgreSQL with `pgvector` extension (768-dimension Gemini embeddings)
-- **Backup/Scale**: Pinecone cloud vector database for high-scale deployments
-- **Smart Fallback**: System automatically uses text search if embeddings fail
+    A & B & C & D --> E
+    E --> F & G & H & I
+    
+    F --> J
+    G --> K
+    G --> L
+    H --> M
+    H --> K
+    I --> K
+```
 
-**What Pinecone Does:**
-- **Scalable Vector Search**: Handle millions of documents with sub-100ms search times
-- **Cloud-Native**: Managed service, no infrastructure setup needed
-- **Production Ready**: When you need to scale beyond PostgreSQL limits
-- **Optional**: Current setup works perfectly with PostgreSQL for most use cases
-
-**Document Processing Workflow:**
-1. **SME uploads** documents via beautiful drag-drop interface
-2. **Backend extracts** text content from PDFs, DOCs, TXT files
-3. **Google Gemini generates** 768-dimension embeddings
-4. **Stores in PostgreSQL** with vector search capabilities
-5. **AI Coach searches** semantically when answering questions
-6. **Users browse** all documents via DocumentViewer component
-
-**Infrastructure**
-- **Vercel** for frontend deployment
-- **Supabase Edge Functions** for serverless backend
-- **Docker** containers for local development
-- **GitHub Actions** for CI/CD
-
-### System Architecture
+### Simple System Architecture
 
 ```mermaid
 graph TB
@@ -135,747 +97,132 @@ graph TB
     M --> H
 ```
 
-## 🚀 Quick Start
 
-### 🛠️ **IMPORTANT: Setup Notes**
+## 🚀 Getting Started
 
-**1. Frontend Error Resolution**
-
-**If you see TypeScript/JSX errors, they're EXPECTED and will be automatically fixed by:**
-
-```bash
-cd frontend
-npm install  # This resolves ALL import and type errors
-```
-
-**Common Errors (Auto-Fixed by npm install):**
-- ❌ `Cannot find module 'react'` → ✅ Fixed by npm install
-- ❌ `Cannot find module 'next'` → ✅ Fixed by npm install  
-- ❌ `JSX element implicitly has type 'any'` → ✅ Fixed by @types/react
-- ❌ `Cannot find module 'lucide-react'` → ✅ Fixed by npm install
-
-**2. Embedding Setup**
-
-**✅ Google Gemini Embeddings are now implemented!** The project uses Google's native embedding API:
-- **Model**: `gemini-embedding-001` (latest, production-ready)
-- **Quality**: Top-ranked on MTEB Multilingual leaderboard  
-- **Features**: 100+ languages, 768 dimensions, $0.15 per 1M tokens
-- **Automatic failover**: Falls back gracefully if API is unavailable
+Setting up K-Orbit is straightforward. Follow these steps to get your local development environment running.
 
 ### Prerequisites
-
-- **Node.js** 18.0.0 or higher
-- **Python** 3.11 or higher
-- **Docker** (recommended for easy setup)
-- **Supabase** account
-- **Google Gemini** API key (direct from Google AI)
-- **Pinecone** account (for vector database)
+- **Node.js** (v18.0.0 or higher)
+- **Python** (v3.11 or higher)
+- **Docker** (Recommended for easy, consistent setup)
+- **Supabase Account**
+- **Google Gemini API Key**
 
 ### 1. Clone the Repository
-
 ```bash
 git clone https://github.com/your-org/k-orbit.git
 cd k-orbit
 ```
 
-### 2. Environment Setup
-
+### 2. Configure Environment Variables
+Copy the example environment file and fill in your credentials.
 ```bash
-# Copy environment template
 cp env.example .env
-
-# Edit .env with your actual values
 nano .env
 ```
+You will need to add your API keys from Supabase and Google AI Studio.
 
-**How to get your Google Gemini API key:**
-1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Sign in with your Google account
-3. Click "Create API Key"
-4. Copy the generated key to your `.env` file
+### 3. Set Up the Database
+Log in to your Supabase account and perform the following steps:
+1.  **Create a new project.**
+2.  Navigate to the **SQL Editor**.
+3.  Copy the entire contents of `infra/schema.sql` and run it to set up your database tables.
+4.  Run the following command in the SQL Editor to enable vector search:
+    ```sql
+    CREATE EXTENSION IF NOT EXISTS vector;
+    ```
 
-**Required Environment Variables:**
+### 4. Run the Application
+
+**Option A: With Docker (Recommended)**
+
+The simplest way to start the entire application stack:
 ```bash
-# Supabase
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-
-# AI Services (Single Google API key for both chat and embeddings)
-GOOGLE_GEMINI_API_KEY=your-google-gemini-api-key
-PINECONE_API_KEY=your-pinecone-key
-PINECONE_ENVIRONMENT=your-pinecone-env
-
-# App URLs
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-NEXT_PUBLIC_API_URL=http://localhost:8000
+docker-compose up -d
 ```
+The frontend will be available at `http://localhost:3000` and the backend at `http://localhost:8000`.
 
-**💰 Gemini API Pricing:**
-- **Text Generation**: Free tier available, then pay-per-use
-- **Embeddings**: $0.15 per 1M tokens (extremely cost-effective)
-- **One API Key**: Powers both chat and semantic search
+**Option B: Manual Setup**
 
-### 3. Database Setup
+If you prefer to run the services manually:
 
-1. **Create Supabase Project**
-   - Go to [Supabase Dashboard](https://supabase.com/dashboard)
-   - Create a new project
-   - Note your project URL and API keys
-
-2. **Run Database Migrations**
-   ```bash
-   # Navigate to the infra directory
-   cd infra
-   
-   # Apply the schema (copy content of schema.sql to Supabase SQL Editor)
-   # Or use Supabase CLI:
-   supabase db push
-   ```
-
-3. **Enable Vector Extension**
-   ```sql
-   -- Run in Supabase SQL Editor
-   CREATE EXTENSION IF NOT EXISTS vector;
-   ```
-
-### 4. Backend Setup
-
+**Backend:**
 ```bash
-# Navigate to backend directory
 cd backend
-
-# Create virtual environment
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
 pip install -r requirements.txt
-
-# Run the application
 uvicorn app.main:app --reload
 ```
 
-The backend will be available at `http://localhost:8000`
-
-### 5. Frontend Setup
-
+**Frontend:**
+*If you see TypeScript or module errors, they are expected and will be resolved by the `npm install` command.*
 ```bash
-# Navigate to frontend directory
 cd frontend
-
-# Install dependencies
 npm install
-
-# Run the development server
 npm run dev
 ```
 
-The frontend will be available at `http://localhost:3000`
-
-### 6. Docker Setup (Alternative)
-
-```bash
-# Run entire stack with Docker Compose
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-```
-
-## 🎯 **VERIFICATION & TESTING**
-
-### ✅ **Verify Everything Works**
-
-1. **Frontend**: http://localhost:3000
-2. **Backend API**: http://localhost:8000
-3. **API Documentation**: http://localhost:8000/docs
-4. **AI Coach**: Click the bot icon in bottom-right corner
-
-### 🧪 **Test AI Coach**
-
-Try these sample questions:
-```
-"What are the key steps in our company onboarding process?"
-"Can you help me find relevant training materials for my role?"
-"What are our main company policies I should be aware of?"
-```
-
-### 🏆 **IMPLEMENTATION STATUS**
-
-| Component | Status | Files | Ready for Enhancement |
-|-----------|--------|-------|----------------------|
-| **🤖 AI Coach** | ✅ **Complete** | `ai-chat.tsx`, `ai_agent/routes.py` | Custom prompts, voice chat |
-| **🔐 Authentication** | ✅ **Complete** | `auth/` modules | SSO integration |
-| **📚 Learner Dashboard** | ✅ **Complete** | `dashboard/learner/` | Advanced analytics |
-| **⚡ Real-time Features** | ✅ **Complete** | `websocket/`, `realtime/` | Mobile push notifications |
-| **🎮 Gamification** | ✅ **Complete** | `gamification/` modules | Custom badge rules |
-| **💬 Forum System** | ✅ **Complete** | `forum/` modules | Advanced moderation |
-| **📖 Course Management** | ✅ **Complete** | `courses/` modules | Video streaming |
-| **🎨 UI/UX System** | ✅ **Complete** | Global themes, components | Brand customization |
-| **🚀 Deployment** | ✅ **Complete** | Docker, configs | CI/CD pipelines |
-| **👨‍🏫 SME Dashboard** | 🚧 **Pattern Ready** | Follow learner pattern | Content creation tools |
-| **👨‍💼 Manager Dashboard** | 🚧 **Pattern Ready** | Follow learner pattern | Team analytics |
-| **⚙️ Admin Dashboard** | 🚧 **Pattern Ready** | Follow learner pattern | System configuration |
+### 5. Verify Your Setup
+- **Frontend App**: `http://localhost:3000`
+- **Backend API Docs**: `http://localhost:8000/docs`
+- **AI Coach**: Log in and click the floating bot icon.
 
 ## 📁 Project Structure
+The repository is organized into three main directories: `backend`, `frontend`, and `infra`.
 
 ```
 k-orbit/
-├── backend/                 # FastAPI Python backend
+├── backend/                # FastAPI application (Python)
 │   ├── app/
-│   │   ├── main.py         # FastAPI application entry point
-│   │   ├── auth/           # Authentication & authorization
-│   │   ├── users/          # User management
-│   │   ├── courses/        # Course management
-│   │   ├── gamification/   # XP, badges, leaderboards
-│   │   ├── ai_agent/       # AI chat and content generation
-│   │   ├── resources/      # File upload and management
-│   │   ├── forum/          # Discussion forums
-│   │   ├── analytics/      # Learning analytics
-│   │   └── realtime/       # WebSocket handlers
-│   ├── tests/              # Backend tests
-│   ├── requirements.txt    # Python dependencies
-│   └── Dockerfile          # Backend container
+│   │   ├── main.py         # API entry point
+│   │   ├── ai_agent/       # AI chat, embeddings, and content generation
+│   │   ├── auth/           # Authentication and authorization logic
+│   │   ├── courses/        # Course management and enrollment
+│   │   ├── gamification/   # XP, badges, and leaderboards
+│   │   ├── resources/      # Document upload and knowledge base
+│   │   └── ...             # Other feature modules
+│   └── Dockerfile
 │
-├── frontend/               # Next.js React frontend
-│   ├── app/                # Next.js 14 App Router
-│   │   ├── (auth)/        # Authentication pages
-│   │   ├── dashboard/     # Role-based dashboards
-│   │   │   ├── learner/   # Learner interface
-│   │   │   ├── sme/       # Subject Matter Expert tools
-│   │   │   └── manager/   # Manager oversight
-│   │   ├── api/           # Next.js API routes
-│   │   └── globals.css    # Global styles
-│   ├── components/        # Reusable UI components
-│   ├── hooks/             # Custom React hooks
-│   ├── stores/            # Zustand state stores
-│   ├── lib/               # Utility libraries
-│   ├── types/             # TypeScript type definitions
-│   └── package.json       # Frontend dependencies
+├── frontend/               # Next.js application (TypeScript)
+│   ├── app/
+│   │   ├── (auth)/         # Login/register pages
+│   │   ├── dashboard/      # Role-based dashboards (learner, sme, manager)
+│   │   └── api/            # Frontend API routes (server-side handlers)
+│   ├── components/
+│   │   ├── ai-coach/       # The global AI chat widget
+│   │   └── ui/             # Reusable shadcn/ui components
+│   └── lib/                # Auth provider, state management, etc.
 │
-├── infra/                 # Infrastructure & database
-│   ├── schema.sql         # Complete database schema
-│   ├── migrations/        # Database migrations
-│   └── edge-functions/    # Supabase Edge Functions
+├── infra/                  # Database schema and infrastructure
+│   └── schema.sql          # Complete PostgreSQL database schema
 │
-├── docs/                  # Documentation
-├── env.example           # Environment variables template
-└── README.md             # This file
+└── docker-compose.yml      # Docker configuration for local development
 ```
 
-## 👥 **TEAM DEVELOPMENT WITH CURSOR/COPILOT**
-
-### 🎯 **Perfect for AI-Assisted Development**
-
-K-Orbit is **optimized for modern development tools** and **AI coding assistants**:
-
-✅ **Cursor IDE Ready** - Full TypeScript support with excellent IntelliSense  
-✅ **GitHub Copilot Compatible** - Well-structured codebase for AI suggestions  
-✅ **Comprehensive Types** - 100% TypeScript for better AI understanding  
-✅ **Clear Architecture** - Organized file structure for easy navigation  
-✅ **Extensive Documentation** - Detailed comments and docstrings  
-
-### 🚀 **Team Onboarding (5 minutes)**
-
-```bash
-# 1. Clone and setup
-git clone <your-repo>
-cd k-orbit
-
-# 2. Install dependencies (fixes all errors)
-cd frontend && npm install
-cd ../backend && pip install -r requirements.txt
-
-# 3. Setup environment
-cp env.example .env
-# Add your Supabase, Google Gemini, and Pinecone credentials
-
-# 4. Start development
-docker-compose up -d  # Starts everything
-```
-
-### 🧠 **AI Coding Assistant Tips**
-
-**For Cursor/Copilot users:**
-
-1. **Context-Aware Prompts**: Use file paths in prompts
-   ```
-   "Add a new endpoint to backend/app/courses/routes.py for bulk enrollment"
-   ```
-
-2. **Type Definitions**: Reference existing types
-   ```
-   "Create a component similar to AIChat but for notifications"
-   ```
-
-3. **Pattern Following**: AI recognizes established patterns
-   ```
-   "Add a new dashboard page following the learner dashboard structure"
-   ```
-
-### 📂 **Key Files for AI Context**
-
-**Frontend Development:**
-- `frontend/types/index.ts` - All TypeScript definitions
-- `frontend/lib/` - Utility functions and providers
-- `frontend/components/ai-coach/ai-chat.tsx` - Reference implementation
-- `frontend/app/dashboard/learner/page.tsx` - Dashboard pattern
-
-**Backend Development:**
-- `backend/app/*/models.py` - Pydantic models for each module
-- `backend/app/*/routes.py` - FastAPI route implementations
-- `backend/app/auth/middleware.py` - Authentication patterns
-- `infra/schema.sql` - Complete database schema
-
-### 🎨 **Development Patterns**
-
-**Adding New Features:**
-1. **Database**: Add tables to `infra/schema.sql`
-2. **Backend**: Create models in `app/module/models.py`
-3. **API**: Add routes to `app/module/routes.py`
-4. **Types**: Update `frontend/types/index.ts`
-5. **UI**: Create components following existing patterns
-
-**AI Prompts That Work Well:**
-```
-"Create a notification system following the pattern of the AI chat"
-"Add user preferences similar to the gamification settings"
-"Build an SME dashboard with the same structure as learner dashboard"
-```
-
-## 🔧 Development Workflow
-
-### Running Tests
-
-**Backend Tests:**
-```bash
-cd backend
-pytest tests/ -v
-```
-
-**Frontend Tests:**
-```bash
-cd frontend
-npm test
-```
-
-**Type Checking:**
-```bash
-# Backend
-cd backend
-mypy app/
-
-# Frontend
-cd frontend
-npm run type-check
-```
-
-### Code Quality
-
-**Linting:**
-```bash
-# Backend
-cd backend
-flake8 app/
-black app/
-isort app/
-
-# Frontend
-cd frontend
-npm run lint
-npm run lint:fix
-```
-
-### Database Management
-
-**Create Migration:**
-```bash
-# Using Supabase CLI
-supabase migration new migration_name
-
-# Or manually create SQL file in infra/migrations/
-```
-
-**Apply Migrations:**
-```bash
-supabase db push
-```
-
-**Reset Database:**
-```bash
-supabase db reset
-```
-
-## 🚀 Deployment
-
-### Production Deployment
-
-**Frontend (Vercel):**
-1. Connect your GitHub repository to Vercel
-2. Set environment variables in Vercel dashboard
-3. Deploy automatically on push to main branch
-
-**Backend (Supabase Edge Functions):**
-```bash
-# Deploy Edge Functions
-supabase functions deploy
-
-# Or use FastAPI on your preferred platform
-# (Railway, Render, DigitalOcean, etc.)
-```
-
-**Environment Variables for Production:**
-```bash
-ENVIRONMENT=production
-SUPABASE_URL=your-production-supabase-url
-NEXT_PUBLIC_APP_URL=https://your-domain.com
-# ... other production values
-```
-
-### CI/CD Pipeline
-
-The project includes GitHub Actions workflows for:
-- **Continuous Integration**: Run tests and type checking on PRs
-- **Deployment**: Auto-deploy to staging/production environments
-- **Security Scanning**: Check for vulnerabilities in dependencies
-
-## 📚 Usage Guide
-
-### For Administrators
-
-1. **Initial Setup**
-   - Create your organization in the admin panel
-   - Invite team members with appropriate roles
-   - Configure organization settings and branding
-
-2. **Content Management**
-   - Upload organizational documents and resources
-   - Create learning paths and course categories
-   - Set up gamification rules and badge criteria
-
-### For SMEs (Subject Matter Experts)
-
-1. **Content Creation**
-   - Upload training materials (PDFs, videos, documents)
-   - Use AI-assisted course generation
-   - Create quizzes and assessments
-   - Monitor learner engagement and progress
-
-2. **Knowledge Sharing**
-   - Participate in forum discussions
-   - Answer learner questions
-   - Share expertise and best practices
-
-### For Managers
-
-1. **Team Oversight**
-   - Monitor team learning progress
-   - Receive intervention alerts for struggling team members
-   - Assign mandatory training and track completion
-   - Generate team performance reports
-
-### For Learners
-
-1. **Learning Journey**
-   - Complete onboarding courses
-   - Follow AI-recommended learning paths
-   - Earn XP points and unlock badges
-   - Participate in forum discussions
-
-2. **AI Assistant**
-   - Ask questions about course content
-   - Get personalized learning recommendations
-   - Access instant help and resources
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
-
-### Development Setup for Contributors
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make your changes and add tests
-4. Ensure all tests pass: `npm test && pytest`
-5. Commit your changes: `git commit -m 'Add amazing feature'`
-6. Push to the branch: `git push origin feature/amazing-feature`
-7. Open a Pull Request
-
-### Code Style Guidelines
-
-- **TypeScript/JavaScript**: Follow Prettier and ESLint configurations
-- **Python**: Follow PEP 8, use Black for formatting
-- **Commit Messages**: Use conventional commits format
-- **Documentation**: Update README and add docstrings for new functions
-
-## 📝 API Documentation
-
-The API documentation is automatically generated and available at:
-- **Development**: http://localhost:8000/docs
-- **Production**: https://your-api-domain.com/docs
-
-### Key API Endpoints
-
-**Authentication:**
-- `POST /api/auth/login` - User login
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/refresh` - Refresh JWT token
-
-**Courses:**
-- `GET /api/courses` - List courses
-- `POST /api/courses` - Create course (SME+)
-- `GET /api/courses/{id}` - Get course details
-- `POST /api/courses/{id}/enroll` - Enroll in course
-
-**AI Assistant:**
-- `POST /api/ai/chat` - Send chat message
-- `POST /api/ai/knowledge/search` - Search knowledge base
-- `POST /api/ai/learning-path` - Generate learning path
-
-**Gamification:**
-- `GET /api/gamification/profile` - Get user XP and badges
-- `GET /api/gamification/leaderboard` - Get leaderboard
-- `POST /api/gamification/award-badge` - Award badge (Admin)
-
-## 🔒 Security
-
-K-Orbit implements enterprise-grade security measures:
-
-- **Authentication**: Supabase Auth with JWT tokens
-- **Authorization**: Role-based access control (RBAC)
-- **Database Security**: Row-level security (RLS) policies
-- **API Security**: Rate limiting and input validation
-- **Data Privacy**: GDPR compliant data handling
-- **Encryption**: TLS/SSL encryption for data in transit
-
-### Security Best Practices
-
-1. **Environment Variables**: Never commit secrets to version control
-2. **Access Control**: Follow principle of least privilege
-3. **Regular Updates**: Keep dependencies updated
-4. **Monitoring**: Enable error tracking and security monitoring
-5. **Backup**: Regular database backups
-
-## 📊 Analytics & Monitoring
-
-### Built-in Analytics
-
-- **Learning Progress**: Track completion rates and time spent
-- **Engagement Metrics**: Monitor user activity and participation
-- **Knowledge Gaps**: Identify areas where learners struggle
-- **ROI Measurement**: Measure training effectiveness
-
-### External Integrations
-
-- **Google Analytics**: Web analytics and user behavior
-- **Sentry**: Error tracking and performance monitoring
-- **Custom Dashboards**: Export data to BI tools
-
-## 🌐 Internationalization
-
-K-Orbit supports multiple languages and locales:
-
-- **Supported Languages**: English, Spanish, French, German, Japanese, Chinese
-- **RTL Support**: Right-to-left language support
-- **Timezone Handling**: Automatic timezone detection and conversion
-- **Currency Localization**: Regional currency formatting
-
-## 📱 Mobile Support
-
-- **Responsive Design**: Works seamlessly on all device sizes
-- **PWA Ready**: Progressive Web App capabilities
-- **Touch Optimized**: Mobile-friendly interactions
-- **Offline Support**: Basic offline functionality
-
-## 🔮 Roadmap
-
-### Upcoming Features
-
-**Q1 2024:**
-- [ ] Advanced video streaming with interactive transcripts
-- [ ] Integration with Microsoft Teams and Slack
-- [ ] Advanced analytics dashboard with predictive insights
-- [ ] Mobile native applications (iOS/Android)
-
-**Q2 2024:**
-- [ ] VR/AR learning experiences
-- [ ] Advanced AI tutoring with voice interaction
-- [ ] Integration with HR systems (Workday, BambooHR)
-- [ ] Certification and compliance tracking
-
-**Q3 2024:**
-- [ ] Marketplace for learning content
-- [ ] Advanced collaboration tools
-- [ ] AI-powered content translation
-- [ ] White-label solutions
-
-## 🆘 Support & Troubleshooting
-
-### 🚨 **Common Issues & Solutions**
-
-**Issue: Frontend TypeScript errors**
-```bash
-# Solution: Install dependencies (fixes ALL errors)
-cd frontend
-npm install
-```
-
-**Issue: Frontend won't start**
-```bash
-# Solution: Ensure you're in the frontend directory
-cd frontend
-npm install
-npm run dev
-```
-
-**Issue: Backend API calls fail**
-```bash
-# Solution: Check backend is running and environment variables
-cd backend
-uvicorn app.main:app --reload
-# Verify SUPABASE_URL and SUPABASE_ANON_KEY in .env
-```
-
-**Issue: AI Coach doesn't respond**
-```bash
-# Solution: Check Google Gemini API key and access
-# Verify GOOGLE_GEMINI_API_KEY in .env
-# Check API quota at https://makersuite.google.com/app/apikey
-```
-
-**Issue: Database connection fails**
-```bash
-# Solution: Verify Supabase configuration
-# 1. Check SUPABASE_URL and keys in .env
-# 2. Ensure database schema is applied
-# 3. Verify vector extension is enabled
-```
-
-### 🛠️ **Development Support**
-
-**For Your Development Team:**
-
-✅ **Complete Codebase** - All patterns established for easy expansion  
-✅ **AI-Friendly** - Optimized for Cursor/Copilot development  
-✅ **Type-Safe** - Full TypeScript support prevents runtime errors  
-✅ **Well-Documented** - Extensive comments and clear architecture  
-✅ **Production Ready** - Security, performance, and scalability built-in  
-
-**Next Steps for Your Team:**
-1. **Fork the repository** and customize branding
-2. **Upload company documents** via the SME dashboard for intelligent knowledge search
-3. **Enhance Manager dashboards** following the established SME dashboard pattern
-4. **Customize gamification** rules and badge criteria based on your company culture
-5. **Add advanced analytics** and reporting features for deeper insights
-6. **Configure AI Coach** with company-specific knowledge and training materials
-
-### Getting Help
-
-- **Documentation**: This comprehensive README
-- **Code Patterns**: Follow existing implementations
-- **GitHub Issues**: Report bugs and request features
-- **AI Assistants**: Cursor/Copilot work excellently with this codebase
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- **Supabase** - For the amazing backend-as-a-service platform
-- **Google AI Studio** - For direct access to Gemini AI models
-- **Vercel** - For the excellent frontend deployment platform
-- **shadcn/ui** - For the beautiful UI component library
-- **FastAPI** - For the high-performance Python web framework
-
----
-
-## 🎯 **FINAL CONFIRMATION FOR YOUR TEAM**
-
-### ✅ **Google Gemini Integration Confirmed**
-- **Text Generation**: `gemini-pro` via Google AI API (direct)
-- **Embeddings**: `gemini-embedding-001` for semantic search
-- **Location**: `backend/app/ai_agent/routes.py` 
-- **Configuration**: Ready for production use
-- **Features**: Context-aware responses, intelligent knowledge search, source attribution
-
-### 🧠 **Intelligent Knowledge Search**
-- **Semantic Understanding**: Finds relevant content by meaning, not just keywords
-- **Multi-language Support**: 100+ languages supported natively
-- **Document Processing**: Automatically processes and indexes company documents
-- **Source Attribution**: AI responses include links to original documents
-- **Real-time Search**: Instant semantic search across all uploaded content
-
-### 🎨 **UI Components & Document Management**
-- **SME Dashboard**: Complete document upload interface with drag-drop, analytics, and file management
-- **Document Viewer**: Beautiful search/filter interface for browsing knowledge base (supports PDF, DOC, TXT)
-- **AI Coach Widget**: Floating chat with glassmorphism design, available globally on all authenticated pages
-- **Learner Dashboard**: Comprehensive progress tracking with courses, achievements, and analytics
-- **Role-Based Access**: Different interfaces for Learners, SMEs, Managers based on permissions
-- **Responsive Design**: Works perfectly on desktop, tablet, and mobile devices
-- **File Processing**: Automatic text extraction from uploaded documents for AI search
-
-### 📋 **Supported File Types (EXPANDED!)**
-```bash
-# Documents (with full text extraction)
-✅ PDF files (.pdf) - PyPDF2 text extraction
-✅ Word documents (.docx) - python-docx processing  
-✅ Text files (.txt, .md) - Direct text processing
-⚠️ Legacy Word (.doc) - Requires additional setup
-
-# Spreadsheets (with data analysis)
-✅ Excel files (.xlsx, .xls) - pandas processing
-✅ CSV files (.csv) - Full data analysis
-
-# Images (with OCR text extraction)
-✅ JPEG, PNG, GIF, BMP, TIFF - pytesseract OCR
-✅ Scanned documents - Automatic text recognition
-
-# Media (placeholder for transcription)
-⚠️ Videos (.mp4, .avi, .mov, .wmv) - Upload ready, transcription pending
-⚠️ Audio (.mp3, .wav, .m4a) - Upload ready, transcription pending
-
-# Processing Features
-✅ Automatic text extraction from all supported formats
-✅ Google Gemini embedding generation for semantic search
-✅ Vector similarity search with PostgreSQL + pgvector
-✅ Fallback to text search if vector search fails
-✅ Real-time processing with background tasks
-```
-
-### 📡 **Document Management APIs**
-```bash
-# Upload documents (SME/Manager only)
-POST /api/resources/upload
-Content-Type: multipart/form-data
-
-# List uploaded files
-GET /api/resources/uploads?limit=20&offset=0
-
-# Search knowledge documents (semantic + text search)
-GET /api/resources/knowledge-documents?query=react&source_type=upload
-
-# Get file analytics
-GET /api/resources/uploads/analytics
-```
-
-### ✅ **Team Development Ready**
-- **Cursor IDE**: Full TypeScript IntelliSense support
-- **GitHub Copilot**: AI-friendly codebase structure
-- **Error-Free Setup**: `npm install` resolves all import issues
-- **Clear Patterns**: Follow existing implementations for new features
-- **Production Architecture**: Enterprise-grade security and scalability
-
-### 🚀 **Your Team Can Immediately:**
-1. **Fork and customize** branding and features
-2. **Use AI assistants** (Cursor/Copilot) for rapid development
-3. **Follow established patterns** for SME/Manager dashboards
-4. **Enhance AI Coach** with company-specific knowledge
-5. **Deploy to production** using included Docker configuration
-
-**K-Orbit is production-ready and optimized for team development with modern AI tools!** 🌟
-
----
-
-**Built with ❤️ for the future of corporate learning**
+## 🤝 Team Development & Contribution
+
+K-Orbit is designed for collaborative development, especially with AI-powered tools. The codebase is fully typed, well-documented, and follows established patterns, making it easy for tools like **Cursor** and **GitHub Copilot** to provide accurate and helpful suggestions.
+
+We welcome contributions! Please see our contributing guide for more details on how to get involved.
+
+## 🧰 Technology Stack & Uses
+- **Frontend**: Next.js 14 (App Router) for modern routing/SSR/ISR; TypeScript for type safety; Tailwind CSS for utility-first styling; shadcn/ui for accessible UI components; Lucide Icons for consistent iconography.
+- **Backend**: FastAPI for high-performance async APIs; Pydantic for validation; Uvicorn as the ASGI server.
+- **Database & Auth**: Supabase (PostgreSQL) with Row-Level Security; Supabase Auth for authentication; Supabase Storage for file handling; pgvector for semantic search.
+- **AI**: Google Gemini for conversational AI; Gemini Embeddings for semantic search across documents.
+- **Real-time**: WebSockets to power live notifications and updates (e.g., announcements, progress).
+- **State & Data**: React Query for server state caching/retries; Zustand for lightweight client state.
+- **DevOps & Deployment**: Docker and docker-compose for local orchestration; Vercel (frontend) and Render/Railway/etc. (backend) for deployment; GitHub Actions (optional) for CI/CD.
+- **Observability**: Structured logging with `structlog`; compatible with Sentry/GA if desired.
+
+## 🔮 Future Enhancements
+- **Multimodal AI**: Voice input, image/document understanding, and richer assistant capabilities.
+- **Deeper Analytics**: Predictive insights, cohort analysis, and customizable KPIs for teams/orgs.
+- **Admin & Manager Dashboards**: Expanded controls, scheduled reports, and policy governance.
+- **Integrations**: SSO (Okta/Azure AD/Google), Slack/Teams notifications, LMS/LRS connectors.
+- **Mobile & Offline**: PWA improvements, native app shells, and resilient offline learning flows.
+- **RAG Improvements**: Advanced chunking, hybrid search, and metadata-weighted retrieval.
+- **Security & RBAC**: Fine-grained permissions, audit trails, and org-level policy templates.
+- **Accessibility & i18n**: WCAG-conformant interactions and expanded language/localization.
