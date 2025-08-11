@@ -203,16 +203,16 @@ k-orbit/
 
 ## 🤝 Team Development & Contribution
 
-K-Orbit is designed for collaborative development, especially with AI-powered tools. The codebase is fully typed, well-documented, and follows established patterns, making it easy for tools like **Cursor** and **GitHub Copilot** to provide accurate and helpful suggestions. Thank you to Cognizant and its organizers for conducting a spectacular vibe coding event to learn and experience vibe coding.
+K-Orbit is designed for collaborative development, especially with AI-powered tools. The codebase is fully typed, well-documented, and follows established patterns, making it easy for tools like primarly **Cursor** and **GitHub Copilot** to provide accurate and helpful suggestions. Thank you to Cognizant and its organizers for conducting a spectacular vibe coding event to learn and experience vibe coding.
 
-Our Contributors:
-Darin Joshua D - Team Lead
-Mahendar G
-Shoaib Hafeez
-Vivek G
-Nayana
-Harshita
-Ashish Kumar
+Our Contributors (7):
+- Darin Joshua D - Team Lead
+- Mahendar G
+- Shoaib Hafeez
+- Vivek G
+- Nayana
+- Harshita
+- Ashish Kumar
 
 ## 🧰 Technology Stack & Uses
 - **Frontend**: Next.js 14 (App Router) for modern routing/SSR/ISR; TypeScript for type safety; Tailwind CSS for utility-first styling; shadcn/ui for accessible UI components; Lucide Icons for consistent iconography.
