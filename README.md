@@ -38,7 +38,29 @@ K-Orbit is built with a modern, scalable, and secure technology stack, designed 
 | **Real-time**| **WebSockets**| Enables live notifications, progress tracking, and announcements. |
 | **Deployment** | **Docker, Vercel, Render** | Containerized for local development and ready for production deployment on modern cloud platforms. |
 
-### System Diagram
+### Simple V1 Design
+
+```mermaid
+graph TB
+    A[Next.js Frontend] --> B[FastAPI Backend]
+    A --> C[Supabase Auth]
+    A --> D[Supabase Real-time]
+    
+    B --> E[PostgreSQL + pgvector]
+    B --> F[Supabase Storage]
+    B --> G[Google Gemini API]
+    B --> H[Pinecone Vector DB]
+    
+    I[SME Uploads] --> J[Document Processing]
+    J --> K[Embedding Generation]
+    K --> H
+    
+    L[AI Chat] --> G
+    G --> M[Knowledge Retrieval]
+    M --> H
+```
+
+### System Final Architecture Diagram
 
 ```mermaid
 graph TD
@@ -73,28 +95,6 @@ graph TD
     H --> M
     H --> K
     I --> K
-```
-
-### Simple System Architecture
-
-```mermaid
-graph TB
-    A[Next.js Frontend] --> B[FastAPI Backend]
-    A --> C[Supabase Auth]
-    A --> D[Supabase Real-time]
-    
-    B --> E[PostgreSQL + pgvector]
-    B --> F[Supabase Storage]
-    B --> G[Google Gemini API]
-    B --> H[Pinecone Vector DB]
-    
-    I[SME Uploads] --> J[Document Processing]
-    J --> K[Embedding Generation]
-    K --> H
-    
-    L[AI Chat] --> G
-    G --> M[Knowledge Retrieval]
-    M --> H
 ```
 
 
